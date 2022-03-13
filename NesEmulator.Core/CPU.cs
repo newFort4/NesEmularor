@@ -1,4 +1,6 @@
-﻿namespace NesEmulator.Core
+﻿using System;
+
+namespace NesEmulator.Core
 {
     /// <summary>
     /// This class implements CPU of the processor 6502
@@ -59,31 +61,50 @@
                         SetNZ(RegisterY);
 
                         break;
-                    default:
+                    case OpCodes.SED:
+                        SetFlag(SRFlags.Decimal);
+
+                        break;
+                    case OpCodes.SEC:
+                        SetFlag(SRFlags.Carry);
+
+                        break;
+                    case OpCodes.SEI:
+                        SetFlag(SRFlags.Interrupt);
+
+                        break;
+                    case OpCodes.CLD:
+                        ClearFlag(SRFlags.Decimal);
+
+                        break;
+                    case OpCodes.CLV:
+                        ClearFlag(SRFlags.VOverflow);
+
+                        break;
+                    case OpCodes.CLC:
+                        ClearFlag(SRFlags.Carry);
+
+                        break;
+                    case OpCodes.CLI:
+                        ClearFlag(SRFlags.Interrupt);
+
+                        break;
+                    case 0xFF:
                         return;
+                    default:
+                        throw new InvalidOperationException();
                 }
             }
         }
 
+
+        private byte SetFlag(SRFlags flag) => Status |= (byte)flag;
+        private byte ClearFlag(SRFlags flag) => Status = (byte)(Status | ~(byte)flag);
+
         private void SetNZ(byte value)
         {
-            if (value == 0)
-            {
-                Status |= (byte)SRFlags.Zero;
-            }
-            else
-            {
-                Status = (byte)(Status | ~(byte)SRFlags.Zero);
-            }
-
-            if ((value & ((byte)SRFlags.Negative)) != 0)
-            {
-                Status |= (byte)SRFlags.Negative;
-            }
-            else
-            {
-                Status = (byte)(Status & ~(byte)SRFlags.Negative);
-            }
+            _ = value == 0 ? SetFlag(SRFlags.Zero) : ClearFlag(SRFlags.Zero);
+            _ = (value & ((byte)SRFlags.Negative)) != 0 ? SetFlag(SRFlags.Negative) : ClearFlag(SRFlags.Negative);
         }
     }
 }
