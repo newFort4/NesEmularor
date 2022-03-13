@@ -3,90 +3,135 @@
 namespace NesEmulator.Core
 {
     /// <summary>
-    /// This class implements CPU of the processor 6502
+    /// This class implements the processor 6502
     /// </summary>
     public class CPU
     {
-        public byte Accumulator { get; private set; }
-        public byte RegisterX { get; private set; }
-        public byte RegisterY { get; private set; }
+        public byte Accumulator { get; private set; } = 0x00;
+        public byte RegisterX { get; private set; } = 0x00;
+        public byte RegisterY { get; private set; } = 0x00;
 
-        public byte Status { get; set; }
+        public byte Status { get; set; } = 0b00000000;
 
-        private ushort ProgramCounter { get; set; }
-        private byte StackPointer { get; set; }
+        private ushort ProgramCounter { get; set; } = 0;
+        private byte StackPointer { get; set; } = 0;
 
-        public CPU()
+        private const ushort ResetVector = 0xFFFC;
+        private const ushort ProgramOffset = 0x8000;
+
+        private byte[] memory { get; set; } = new byte[ushort.MaxValue];
+
+        public void LoadAndRun(byte[] program)
         {
-            Accumulator = 0;
-            Status = 0;
-            ProgramCounter = 0;
+            Load(program);
+            Reset();
+            Run();
         }
 
-        public void Interpret(byte[] program)
+        public void Load(byte[] program)
         {
-            ProgramCounter = 0;
+            // ToDo: Check ArraySegment<T>
+
+            Array.Copy(program, 0, memory, ProgramOffset, program.Length);
+
+            WriteMemoryUshort(ResetVector, ProgramOffset);
+        }
+
+        public void Run()
+        {
+            // ToDo: Implement All OpCodes
 
             while (true)
             {
-                var opCode = program[ProgramCounter];
+                var opCode = ReadMemory(ProgramCounter);
 
                 ProgramCounter++;
 
                 switch (opCode)
                 {
-                    case OpCodes.LDA:
-                        Accumulator = program[ProgramCounter];
+                    case OpCode.LDA:
+                        LDA(AddressingMode.Immediate);
                         ProgramCounter++;
-                        SetNZ(Accumulator);
 
                         break;
-                    case OpCodes.TAX:
+                    case 0xA5:
+                        LDA(AddressingMode.ZeroPage);
+                        ProgramCounter++;
+
+                        break;
+                    case 0xAD:
+                        LDA(AddressingMode.Absolute);
+                        ProgramCounter += 2;
+
+                        break;
+                    case 0x85:
+                        STA(AddressingMode.ZeroPage);
+                        ProgramCounter++;
+
+                        break;
+                    case 0x95:
+                        STA(AddressingMode.ZeroPageX);
+                        ProgramCounter++;
+
+                        break;
+                    case OpCode.LDX:
+                        RegisterX = ReadMemory(ProgramCounter);
+                        ProgramCounter++;
+                        SetNZ(RegisterX);
+
+                        break;
+                    case OpCode.LDY:
+                        RegisterY = ReadMemory(ProgramCounter);
+                        ProgramCounter++;
+                        SetNZ(RegisterY);
+
+                        break;
+                    case OpCode.TAX:
                         RegisterX = Accumulator;
                         SetNZ(RegisterX);
 
                         break;
-                    case OpCodes.TAY:
+                    case OpCode.TAY:
                         RegisterY = Accumulator;
                         SetNZ(RegisterY);
 
                         break;
-                    case OpCodes.INX:
+                    case OpCode.INX:
                         RegisterX++;
                         SetNZ(RegisterX);
 
                         break;
-                    case OpCodes.INY:
+                    case OpCode.INY:
                         RegisterY++;
                         SetNZ(RegisterY);
 
                         break;
-                    case OpCodes.SED:
-                        SetFlag(SRFlags.Decimal);
+                    case OpCode.SED:
+                        SetFlag(SRFlag.Decimal);
 
                         break;
-                    case OpCodes.SEC:
-                        SetFlag(SRFlags.Carry);
+                    case OpCode.SEC:
+                        SetFlag(SRFlag.Carry);
 
                         break;
-                    case OpCodes.SEI:
-                        SetFlag(SRFlags.Interrupt);
+                    case OpCode.SEI:
+                        SetFlag(SRFlag.Interrupt);
 
                         break;
-                    case OpCodes.CLD:
-                        ClearFlag(SRFlags.Decimal);
+                    case OpCode.CLD:
+                        ClearFlag(SRFlag.Decimal);
 
                         break;
-                    case OpCodes.CLV:
-                        ClearFlag(SRFlags.VOverflow);
+                    case OpCode.CLV:
+                        ClearFlag(SRFlag.VOverflow);
 
                         break;
-                    case OpCodes.CLC:
-                        ClearFlag(SRFlags.Carry);
+                    case OpCode.CLC:
+                        ClearFlag(SRFlag.Carry);
 
                         break;
-                    case OpCodes.CLI:
-                        ClearFlag(SRFlags.Interrupt);
+                    case OpCode.CLI:
+                        ClearFlag(SRFlag.Interrupt);
 
                         break;
                     case 0xFF:
@@ -97,14 +142,98 @@ namespace NesEmulator.Core
             }
         }
 
+        private void LDA(AddressingMode addressingMode)
+        {
+            var address = GetOperandAddress(addressingMode);
+            var value = ReadMemory(address);
 
-        private byte SetFlag(SRFlags flag) => Status |= (byte)flag;
-        private byte ClearFlag(SRFlags flag) => Status = (byte)(Status | ~(byte)flag);
+            Accumulator = value;
+            SetNZ(Accumulator);
+        }
+
+        private void STA(AddressingMode addressingMode)
+        {
+            var address = GetOperandAddress(addressingMode);
+            WriteMemory(address, Accumulator);
+        }
+
+        private void Reset()
+        {
+            Accumulator = 0;
+            RegisterX = 0;
+            RegisterY = 0;
+            Status = 0;
+
+            ProgramCounter = ReadMemoryUshort(ResetVector);
+        }
+
+        private ushort GetOperandAddress(AddressingMode addressingMode)
+        {
+            switch (addressingMode)
+            {
+                case AddressingMode.Immediate:
+                    return ProgramCounter;
+                case AddressingMode.ZeroPage:
+                    return ReadMemory(ProgramCounter);
+                case AddressingMode.Absolute:
+                    return ReadMemoryUshort(ProgramCounter);
+                case AddressingMode.ZeroPageX:
+                    return (ushort)(ReadMemory(ProgramCounter) + RegisterX);
+                case AddressingMode.ZeroPageY:
+                    return (ushort)(ReadMemory(ProgramCounter) + RegisterY);
+                case AddressingMode.AbsoluteX:
+                    return (ushort)(ReadMemoryUshort(ProgramCounter) + RegisterX);
+                case AddressingMode.AbsoluteY:
+                    return (ushort)(ReadMemoryUshort(ProgramCounter) + RegisterY);
+                case AddressingMode.IndirectX:
+                    return GetIndirectOperandAddress(RegisterX);
+                case AddressingMode.IndirectY:
+                    // Guy from the internet did it in another way. Don't know why.
+                    return GetIndirectOperandAddress(RegisterY);
+                case AddressingMode.NoneAddressing:
+                    throw new InvalidOperationException("Incorrect Addressing Mode.");
+                default:
+                    throw new InvalidOperationException("Incorrect Addressing Mode.");
+            }
+
+            ushort GetIndirectOperandAddress(byte register)
+            {
+                var position = ReadMemory(ProgramCounter);
+                var pointer = (byte)(position + register);
+                var low = ReadMemory(pointer);
+                var high = ReadMemory((byte)(pointer + 1));
+
+                return (ushort)((high) << 8 | (low));
+            }
+        }
+
+        private byte SetFlag(SRFlag flag) => Status |= (byte)flag;
+        private byte ClearFlag(SRFlag flag) => Status = (byte)(Status | ~(byte)flag);
 
         private void SetNZ(byte value)
         {
-            _ = value == 0 ? SetFlag(SRFlags.Zero) : ClearFlag(SRFlags.Zero);
-            _ = (value & ((byte)SRFlags.Negative)) != 0 ? SetFlag(SRFlags.Negative) : ClearFlag(SRFlags.Negative);
+            _ = value == 0 ? SetFlag(SRFlag.Zero) : ClearFlag(SRFlag.Zero);
+            _ = (value & ((byte)SRFlag.Negative)) != 0 ? SetFlag(SRFlag.Negative) : ClearFlag(SRFlag.Negative);
+        }
+
+        public byte ReadMemory(ushort address) => memory[address];
+        public byte WriteMemory(ushort address, byte value) => memory[address] = value;
+
+        private ushort ReadMemoryUshort(ushort position)
+        {
+            var low = (ushort) ReadMemory(position);
+            var high = (ushort) ReadMemory((ushort)(position + 1));
+
+            return (ushort)((high << 8) | (low));
+        }
+
+        private void WriteMemoryUshort(ushort position, ushort data)
+        {
+            var high = (byte) (data >> 8);
+            var low = (byte) (data & 0xFF);
+
+            WriteMemory(position, low);
+            WriteMemory((ushort)(position + 1), high);
         }
     }
 }

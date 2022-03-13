@@ -4,12 +4,12 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class TAYTests : CPUBaseTests
     {
-        private const byte TAY = OpCodes.TAY;
+        private const byte TAY = OpCode.TAY;
 
         [Fact]
         public void TAYWithValueWorks()
         {
-            cpu.Interpret(new byte[] { OpCodes.LDA, SomeValue, TAY, StopCode });
+            cpu.LoadAndRun(new byte[] { OpCode.LDA, SomeValue, TAY, StopCode });
 
             Assert.Equal(cpu.RegisterY, SomeValue);
         }
@@ -17,17 +17,17 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void TAYWithZeroWorks()
         {
-            cpu.Interpret(new byte[] { OpCodes.LDA, AllZeroes, TAY, StopCode });
+            cpu.LoadAndRun(new byte[] { OpCode.LDA, AllZeroes, TAY, StopCode });
 
-            Assert.Equal(cpu.Status & ((byte)SRFlags.Zero), (byte)SRFlags.Zero);
+            Assert.Equal(cpu.Status & ((byte)SRFlag.Zero), (byte)SRFlag.Zero);
         }
 
         [Fact]
         public void TAYWithNegativeWorks()
         {
-            cpu.Interpret(new byte[] { OpCodes.LDA, AllOnes, TAY, StopCode });
+            cpu.LoadAndRun(new byte[] { OpCode.LDA, AllOnes, TAY, StopCode });
 
-            Assert.Equal(cpu.Status & ((byte)SRFlags.Negative), (byte)SRFlags.Negative);
+            Assert.Equal(cpu.Status & ((byte)SRFlag.Negative), (byte)SRFlag.Negative);
         }
     }
 }

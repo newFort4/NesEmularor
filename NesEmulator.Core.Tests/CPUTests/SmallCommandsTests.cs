@@ -5,24 +5,24 @@ namespace NesEmulator.Core.Tests.CPUTests
     public class SmallCommandsTests : CPUBaseTests
     {
         [Theory]
-        [InlineData(OpCodes.SED, SRFlags.Decimal)]
-        [InlineData(OpCodes.SEC, SRFlags.Carry)]
-        [InlineData(OpCodes.SEI, SRFlags.Interrupt)]
-        public void SetsFlagCorrectly(byte opCode, SRFlags flag)
+        [InlineData(OpCode.SED, SRFlag.Decimal)]
+        [InlineData(OpCode.SEC, SRFlag.Carry)]
+        [InlineData(OpCode.SEI, SRFlag.Interrupt)]
+        public void SetsFlagCorrectly(byte opCode, SRFlag flag)
         {
-            cpu.Interpret(new byte[] { opCode, StopCode });
+            cpu.LoadAndRun(new byte[] { opCode, StopCode });
 
             Assert.Equal(cpu.Status & ((byte)flag), (byte)flag);
         }
 
         [Theory]
-        [InlineData(OpCodes.CLD, SRFlags.Decimal)]
-        [InlineData(OpCodes.CLV, SRFlags.VOverflow)]
-        [InlineData(OpCodes.CLC, SRFlags.Carry)]
-        [InlineData(OpCodes.CLI, SRFlags.Interrupt)]
-        public void CearsFlagCorrectly(byte opCode, SRFlags flag)
+        [InlineData(OpCode.CLD, SRFlag.Decimal)]
+        [InlineData(OpCode.CLV, SRFlag.VOverflow)]
+        [InlineData(OpCode.CLC, SRFlag.Carry)]
+        [InlineData(OpCode.CLI, SRFlag.Interrupt)]
+        public void CearsFlagCorrectly(byte opCode, SRFlag flag)
         {
-            cpu.Interpret(new byte[] { opCode, StopCode });
+            cpu.LoadAndRun(new byte[] { opCode, StopCode });
 
             Assert.Equal(cpu.Status | (~(byte)flag), ~(byte)flag);
         }

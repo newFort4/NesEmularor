@@ -1,6 +1,6 @@
 ﻿namespace NesEmulator.Core
 {
-    public enum SRFlags
+    public enum SRFlag
     {
         Negative = 0b10000000,
         VOverflow = 0b01000000,

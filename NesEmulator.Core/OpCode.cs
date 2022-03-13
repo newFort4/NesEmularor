@@ -1,8 +1,10 @@
 ﻿namespace NesEmulator.Core
 {
-    public static class OpCodes
+    public static class OpCode
     {
         public const byte LDA = 0xA9;
+        public const byte LDX = 0xA2;
+        public const byte LDY = 0xA0;
 
         public const byte TAX = 0xAA;
         public const byte TAY = 0xA8;

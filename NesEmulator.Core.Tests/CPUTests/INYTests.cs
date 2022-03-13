@@ -4,12 +4,12 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class INYTests : CPUBaseTests
     {
-        private readonly byte INY = OpCodes.INY;
+        private readonly byte INY = OpCode.INY;
 
         [Fact]
         public void INYWithValueWorks()
         {
-            cpu.Interpret(new byte[] { OpCodes.LDA, SomeValue, OpCodes.TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { OpCode.LDA, SomeValue, OpCode.TAY, INY, StopCode });
 
             Assert.Equal(cpu.RegisterY, SomeValue + 1);
         }
@@ -17,17 +17,17 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void INYWithZeroWorks()
         {
-            cpu.Interpret(new byte[] { OpCodes.LDA, AllOnes, OpCodes.TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { OpCode.LDA, AllOnes, OpCode.TAY, INY, StopCode });
 
-            Assert.Equal(cpu.Status & ((byte)SRFlags.Zero), (byte)SRFlags.Zero);
+            Assert.Equal(cpu.Status & ((byte)SRFlag.Zero), (byte)SRFlag.Zero);
         }
 
         [Fact]
         public void INYWithNegativeWorks()
         {
-            cpu.Interpret(new byte[] { OpCodes.LDA, AllOnesExceptTheLast, OpCodes.TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { OpCode.LDA, AllOnesExceptTheLast, OpCode.TAY, INY, StopCode });
 
-            Assert.Equal(cpu.Status & ((byte)SRFlags.Negative), (byte)SRFlags.Negative);
+            Assert.Equal(cpu.Status & ((byte)SRFlag.Negative), (byte)SRFlag.Negative);
         }
     }
 }
