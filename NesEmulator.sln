@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.810.20
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.Core", "NesEmulator.Core\NesEmulator.Core.csproj", "{286F9071-3922-4A6D-A6D0-C6E3598C4910}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.Core.Tests", "NesEmulator.Core.Tests\NesEmulator.Core.Tests.csproj", "{03BF3923-5C05-4FE5-BAFA-507B72B70BAE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{286F9071-3922-4A6D-A6D0-C6E3598C4910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{286F9071-3922-4A6D-A6D0-C6E3598C4910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{286F9071-3922-4A6D-A6D0-C6E3598C4910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{286F9071-3922-4A6D-A6D0-C6E3598C4910}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03BF3923-5C05-4FE5-BAFA-507B72B70BAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03BF3923-5C05-4FE5-BAFA-507B72B70BAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03BF3923-5C05-4FE5-BAFA-507B72B70BAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03BF3923-5C05-4FE5-BAFA-507B72B70BAE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB5E4B0A-92BC-4FEF-ACEA-CA0190FA62BE}
+	EndGlobalSection
+EndGlobal
