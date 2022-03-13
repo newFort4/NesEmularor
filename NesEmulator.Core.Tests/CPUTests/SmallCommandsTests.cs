@@ -1,30 +1,68 @@
-﻿using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
 
 namespace NesEmulator.Core.Tests.CPUTests
 {
     public class SmallCommandsTests : CPUBaseTests
     {
-        [Theory]
-        [InlineData(OpCode.SED, SRFlag.Decimal)]
-        [InlineData(OpCode.SEC, SRFlag.Carry)]
-        [InlineData(OpCode.SEI, SRFlag.Interrupt)]
-        public void SetsFlagCorrectly(byte opCode, SRFlag flag)
+        [Fact]
+        public void SetsFlagCorrectly()
         {
-            cpu.LoadAndRun(new byte[] { opCode, StopCode });
+            var tuples = new List<Tuple<byte, SRFlag>>
+            {
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "SED" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.Decimal),
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "SEC" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.Carry),
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "SEI" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.Interrupt)
+            };
 
-            Assert.Equal(cpu.Status & ((byte)flag), (byte)flag);
+            foreach (var tuple in tuples)
+            {
+                cpu.LoadAndRun(new byte[] { tuple.Item1, StopCode });
+
+                Assert.Equal(cpu.Status & ((byte)tuple.Item2), (byte)tuple.Item2);
+            }
         }
 
-        [Theory]
-        [InlineData(OpCode.CLD, SRFlag.Decimal)]
-        [InlineData(OpCode.CLV, SRFlag.VOverflow)]
-        [InlineData(OpCode.CLC, SRFlag.Carry)]
-        [InlineData(OpCode.CLI, SRFlag.Interrupt)]
-        public void CearsFlagCorrectly(byte opCode, SRFlag flag)
+        [Fact]
+        public void CearsFlagCorrectly()
         {
-            cpu.LoadAndRun(new byte[] { opCode, StopCode });
+            var tuples = new List<Tuple<byte, SRFlag>>
+            {
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "CLD" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.Decimal),
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "CLV" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.VOverflow),
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "CLC" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.Carry),
+                new Tuple<byte, SRFlag>(OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "CLI" && x.AddressingMode == AddressingMode.NoneAddressing)
+                .Code, SRFlag.Interrupt)
+            };
 
-            Assert.Equal(cpu.Status | (~(byte)flag), ~(byte)flag);
+            foreach (var tuple in tuples)
+            {
+                cpu.LoadAndRun(new byte[] { tuple.Item1, StopCode });
+
+                Assert.Equal(cpu.Status | (~(byte)tuple.Item2), ~(byte)tuple.Item2);
+            }
         }
     }
 }

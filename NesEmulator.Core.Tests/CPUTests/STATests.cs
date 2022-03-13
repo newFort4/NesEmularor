@@ -1,17 +1,26 @@
-﻿using Xunit;
+﻿using System.Linq;
+using Xunit;
 
 namespace NesEmulator.Core.Tests.CPUTests
 {
     public class STATests : CPUBaseTests
     {
+        private readonly byte LDA = OpCodes
+            .Codes
+            .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Immediate)
+            .Code;
+
         public class STAZeroPageTests : STATests
         {
-            private const byte STA = 0x85;
+            private readonly byte STA = OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "STA" && x.AddressingMode == AddressingMode.ZeroPage)
+                .Code;
 
             [Fact]
             public void STAWorksCorrectly()
             {
-                cpu.LoadAndRun(new byte[] { OpCode.LDA, SomeValue, STA, (byte)SomeAddress, StopCode });
+                cpu.LoadAndRun(new byte[] { LDA, SomeValue, STA, (byte)SomeAddress, StopCode });
 
                 Assert.Equal(cpu.ReadMemory(SomeAddress), SomeValue);
             }
@@ -19,15 +28,23 @@ namespace NesEmulator.Core.Tests.CPUTests
 
         public class STAZeroPageXTests : STATests
         {
-            private const byte STA = 0x95;
+            private readonly byte STA = OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "STA" && x.AddressingMode == AddressingMode.ZeroPageX)
+                .Code;
+
+            private readonly byte LDX = OpCodes
+                .Codes
+                .Single(x => x.Mnemonic == "LDX" && x.AddressingMode == AddressingMode.Immediate)
+                .Code;
 
             [Fact]
             public void STAWorksCorrectly()
             {
                 cpu.LoadAndRun(new byte[]
                 {
-                    OpCode.LDA, SomeValue,
-                    OpCode.LDX, 4,
+                    LDA, SomeValue,
+                    LDX, 4,
                     STA, (byte)SomeAddress,
                     StopCode
                 });

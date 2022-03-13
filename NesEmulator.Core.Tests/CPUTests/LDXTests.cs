@@ -1,10 +1,14 @@
-﻿using Xunit;
+﻿using System.Linq;
+using Xunit;
 
 namespace NesEmulator.Core.Tests.CPUTests
 {
     public class LDXTests : CPUBaseTests
     {
-        private const byte LDX = OpCode.LDX;
+        private readonly byte LDX = OpCodes
+            .Codes
+            .Single(x => x.Mnemonic == "LDX" && x.AddressingMode == AddressingMode.Immediate)
+            .Code;
 
         [Fact]
         public void LDXWithValueWorks()
@@ -15,11 +19,27 @@ namespace NesEmulator.Core.Tests.CPUTests
         }
 
         [Fact]
+        public void LDXWithNonZeroWorks()
+        {
+            cpu.LoadAndRun(new byte[] { LDX, 0x01, StopCode });
+
+            AssertFlag(SRFlag.Zero, false);
+        }
+
+        [Fact]
+        public void LDXWithPositiveWorks()
+        {
+            cpu.LoadAndRun(new byte[] { LDX, 0x01, StopCode });
+
+            AssertFlag(SRFlag.Negative, false);
+        }
+
+        [Fact]
         public void LDXWithZeroWorks()
         {
             cpu.LoadAndRun(new byte[] { LDX, AllZeroes, StopCode });
 
-            Assert.Equal(cpu.Status & ((byte)SRFlag.Zero), (byte)SRFlag.Zero);
+            AssertFlag(SRFlag.Zero, true);
         }
 
         [Fact]
@@ -27,7 +47,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         {
             cpu.LoadAndRun(new byte[] { LDX, AllOnes, StopCode });
 
-            Assert.Equal(cpu.Status & ((byte)SRFlag.Negative), (byte)SRFlag.Negative);
+            AssertFlag(SRFlag.Negative, true);
         }
     }
 }

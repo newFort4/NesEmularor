@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace NesEmulator.Core
 {
@@ -47,98 +48,84 @@ namespace NesEmulator.Core
 
                 ProgramCounter++;
 
+                var generalOpCode = OpCodes.Codes.SingleOrDefault(x => x.Code == opCode);
+
                 switch (opCode)
                 {
-                    case OpCode.LDA:
-                        LDA(AddressingMode.Immediate);
-                        ProgramCounter++;
-
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LDA").Select(x => x.Code).Contains(opCode):
+                        LDA(generalOpCode.AddressingMode);
                         break;
-                    case 0xA5:
-                        LDA(AddressingMode.ZeroPage);
-                        ProgramCounter++;
-
-                        break;
-                    case 0xAD:
-                        LDA(AddressingMode.Absolute);
-                        ProgramCounter += 2;
-
-                        break;
-                    case 0x85:
-                        STA(AddressingMode.ZeroPage);
-                        ProgramCounter++;
-
-                        break;
-                    case 0x95:
-                        STA(AddressingMode.ZeroPageX);
-                        ProgramCounter++;
-
-                        break;
-                    case OpCode.LDX:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LDX").Select(x => x.Code).Contains(opCode):
                         RegisterX = ReadMemory(ProgramCounter);
-                        ProgramCounter++;
                         SetNZ(RegisterX);
-
                         break;
-                    case OpCode.LDY:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LDY").Select(x => x.Code).Contains(opCode):
                         RegisterY = ReadMemory(ProgramCounter);
-                        ProgramCounter++;
                         SetNZ(RegisterY);
-
                         break;
-                    case OpCode.TAX:
+
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TAX").Select(x => x.Code).Contains(opCode):
                         RegisterX = Accumulator;
                         SetNZ(RegisterX);
-
                         break;
-                    case OpCode.TAY:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TAY").Select(x => x.Code).Contains(opCode):
                         RegisterY = Accumulator;
                         SetNZ(RegisterY);
-
                         break;
-                    case OpCode.INX:
+
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "STA").Select(x => x.Code).Contains(opCode):
+                        STA(generalOpCode.AddressingMode);
+                        break;
+
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "AND").Select(x => x.Code).Contains(opCode):
+                        AND(generalOpCode.AddressingMode);
+                        break;
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "EOR").Select(x => x.Code).Contains(opCode):
+                        EOR(generalOpCode.AddressingMode);
+                        break;
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "ORA").Select(x => x.Code).Contains(opCode):
+                        ORA(generalOpCode.AddressingMode);
+                        break;
+
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "INX").Select(x => x.Code).Contains(opCode):
                         RegisterX++;
                         SetNZ(RegisterX);
-
                         break;
-                    case OpCode.INY:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "INY").Select(x => x.Code).Contains(opCode):
                         RegisterY++;
                         SetNZ(RegisterY);
-
                         break;
-                    case OpCode.SED:
+
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SED").Select(x => x.Code).Contains(opCode):
                         SetFlag(SRFlag.Decimal);
-
                         break;
-                    case OpCode.SEC:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SEC").Select(x => x.Code).Contains(opCode):
                         SetFlag(SRFlag.Carry);
-
                         break;
-                    case OpCode.SEI:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SEI").Select(x => x.Code).Contains(opCode):
                         SetFlag(SRFlag.Interrupt);
-
                         break;
-                    case OpCode.CLD:
+
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLD").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.Decimal);
-
                         break;
-                    case OpCode.CLV:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLV").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.VOverflow);
-
                         break;
-                    case OpCode.CLC:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLC").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.Carry);
-
                         break;
-                    case OpCode.CLI:
+                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLI").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.Interrupt);
-
                         break;
+
                     case 0xFF:
                         return;
                     default:
                         throw new InvalidOperationException();
                 }
+
+                ProgramCounter = (ushort)(ProgramCounter + generalOpCode.Length - 1);
             }
         }
 
@@ -155,6 +142,36 @@ namespace NesEmulator.Core
         {
             var address = GetOperandAddress(addressingMode);
             WriteMemory(address, Accumulator);
+        }
+
+        private void AND(AddressingMode addressingMode)
+        {
+            var address = GetOperandAddress(addressingMode);
+            var value = ReadMemory(address);
+
+            Accumulator &= value;
+
+            SetNZ(Accumulator);
+        }
+
+        private void EOR(AddressingMode addressingMode)
+        {
+            var address = GetOperandAddress(addressingMode);
+            var value = ReadMemory(address);
+
+            Accumulator ^= value;
+
+            SetNZ(Accumulator);
+        }
+
+        private void ORA(AddressingMode addressingMode)
+        {
+            var address = GetOperandAddress(addressingMode);
+            var value = ReadMemory(address);
+
+            Accumulator |= value;
+
+            SetNZ(Accumulator);
         }
 
         private void Reset()
@@ -208,7 +225,7 @@ namespace NesEmulator.Core
         }
 
         private byte SetFlag(SRFlag flag) => Status |= (byte)flag;
-        private byte ClearFlag(SRFlag flag) => Status = (byte)(Status | ~(byte)flag);
+        private byte ClearFlag(SRFlag flag) => Status = (byte)(Status & ~(byte)flag);
 
         private void SetNZ(byte value)
         {

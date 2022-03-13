@@ -1,10 +1,14 @@
-﻿using Xunit;
+﻿using System.Linq;
+using Xunit;
 
 namespace NesEmulator.Core.Tests.CPUTests
 {
     public class LDYTests : CPUBaseTests
     {
-        private const byte LDY = OpCode.LDY;
+        private readonly byte LDY = OpCodes
+            .Codes
+            .Single(x => x.Mnemonic == "LDY" && x.AddressingMode == AddressingMode.Immediate)
+            .Code;
 
         [Fact]
         public void LDYWithValueWorks()
@@ -12,6 +16,22 @@ namespace NesEmulator.Core.Tests.CPUTests
             cpu.LoadAndRun(new byte[] { LDY, SomeValue, StopCode });
 
             Assert.Equal(cpu.RegisterY, SomeValue);
+        }
+
+        [Fact]
+        public void LDYWithNonZeroWorks()
+        {
+            cpu.LoadAndRun(new byte[] { LDY, 0x01, StopCode });
+
+            AssertFlag(SRFlag.Zero, false);
+        }
+
+        [Fact]
+        public void LDYWithPositiveWorks()
+        {
+            cpu.LoadAndRun(new byte[] { LDY, 0x01, StopCode });
+
+            AssertFlag(SRFlag.Negative, false);
         }
 
         [Fact]
