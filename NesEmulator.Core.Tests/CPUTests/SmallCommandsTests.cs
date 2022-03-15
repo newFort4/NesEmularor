@@ -28,7 +28,7 @@ namespace NesEmulator.Core.Tests.CPUTests
 
             foreach (var tuple in tuples)
             {
-                cpu.LoadAndRun(new byte[] { tuple.Item1, StopCode });
+                cpu.LoadAndRun(new byte[] { tuple.Item1, BRK });
 
                 Assert.Equal(cpu.Status & ((byte)tuple.Item2), (byte)tuple.Item2);
             }
@@ -59,7 +59,7 @@ namespace NesEmulator.Core.Tests.CPUTests
 
             foreach (var tuple in tuples)
             {
-                cpu.LoadAndRun(new byte[] { tuple.Item1, StopCode });
+                cpu.LoadAndRun(new byte[] { tuple.Item1, BRK });
 
                 Assert.Equal(cpu.Status | (~(byte)tuple.Item2), ~(byte)tuple.Item2);
             }

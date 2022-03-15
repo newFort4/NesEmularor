@@ -21,7 +21,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void INYWithValueWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, SomeValue, TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, SomeValue, TAY, INY, BRK });
 
             Assert.Equal(cpu.RegisterY, SomeValue + 1);
         }
@@ -29,7 +29,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void INYWithNonZeroWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllZeroes, TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, AllZeroes, TAY, INY, BRK });
 
             AssertFlag(SRFlag.Zero, false);
         }
@@ -37,7 +37,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void INYWithPositiveWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllZeroes, TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, AllZeroes, TAY, INY, BRK });
 
             AssertFlag(SRFlag.Negative, false);
         }
@@ -45,7 +45,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void INYWithZeroWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllOnes, TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, AllOnes, TAY, INY, BRK });
 
             AssertFlag(SRFlag.Zero, true);
         }
@@ -53,7 +53,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void INYWithNegativeWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllOnesExceptTheLast, TAY, INY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, AllOnesExceptTheLast, TAY, INY, BRK });
 
             AssertFlag(SRFlag.Negative, true);
         }

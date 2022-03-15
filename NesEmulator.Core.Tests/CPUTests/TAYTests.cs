@@ -17,7 +17,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void TAYWithValueWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, SomeValue, TAY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, SomeValue, TAY, BRK });
 
             Assert.Equal(cpu.RegisterY, SomeValue);
         }
@@ -25,7 +25,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void TAYWithZeroWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllZeroes, TAY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, AllZeroes, TAY, BRK });
 
             Assert.Equal(cpu.Status & ((byte)SRFlag.Zero), (byte)SRFlag.Zero);
         }
@@ -33,7 +33,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void TAYWithNegativeWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllOnes, TAY, StopCode });
+            cpu.LoadAndRun(new byte[] { LDA, AllOnes, TAY, BRK });
 
             Assert.Equal(cpu.Status & ((byte)SRFlag.Negative), (byte)SRFlag.Negative);
         }

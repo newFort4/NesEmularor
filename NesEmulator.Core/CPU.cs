@@ -15,15 +15,15 @@ namespace NesEmulator.Core
         public byte Status { get; set; } = 0b00000000;
 
         private ushort ProgramCounter { get; set; } = 0;
-        // ToDo: Guy from the internet did it in another way.
-        private byte StackPointer { get; set; } = 0xFF;
+        private byte StackPointer { get; set; } = StackReset;
 
         private const ushort ResetVector = 0xFFFC;
-        private const ushort ProgramOffset = 0x8000;
+        private const byte StackReset = 0xFD;
+        public const ushort ProgramOffset = 0x0600;//0xC000;//0x0600;
 
         private const ushort StackOffset = 0x0100;
 
-        private byte[] memory { get; set; } = new byte[ushort.MaxValue];
+        public byte[] memory { get; set; } = new byte[ushort.MaxValue + 1];
 
         public void LoadAndRun(byte[] program)
         {
@@ -36,221 +36,232 @@ namespace NesEmulator.Core
         {
             // ToDo: Check ArraySegment<T>
 
-            Array.Copy(program, 0, memory, ProgramOffset, program.Length);
+            //Array.Copy(program, 0, memory, ProgramOffset, program.Length);
+
+            for (var i = 0; i < program.Length; i++)
+            {
+                WriteMemory((ushort)(ProgramOffset + i), program[i]);
+            }
 
             WriteMemoryUshort(ResetVector, ProgramOffset);
         }
 
         public void Run()
         {
-            // ToDo: Implement All OpCodes
+            RunWithCallback((cpu) => { });
+        }
+
+        public void RunWithCallback(Action<CPU> action)
+        {
+            var opCodes = OpCodes.Codes;
 
             while (true)
             {
                 var opCode = ReadMemory(ProgramCounter);
 
                 ProgramCounter++;
+                var programCounterState = ProgramCounter;
 
-                var generalOpCode = OpCodes.Codes.SingleOrDefault(x => x.Code == opCode);
+                var generalOpCode = opCodes.SingleOrDefault(x => x.Code == opCode);
 
                 switch (opCode)
                 {
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BRK").Select(x => x.Code).Contains(opCode):
-                        // ToDo: Not implemented now
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BRK").Select(x => x.Code).Contains(opCode):
+                        //return;
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "NOP").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "NOP").Select(x => x.Code).Contains(opCode):
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LDA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "LDA").Select(x => x.Code).Contains(opCode):
                         LDA(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LDX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "LDX").Select(x => x.Code).Contains(opCode):
                         LDX(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LDY").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "LDY").Select(x => x.Code).Contains(opCode):
                         LDY(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TAX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "TAX").Select(x => x.Code).Contains(opCode):
                         RegisterX = RegisterA;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TAY").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "TAY").Select(x => x.Code).Contains(opCode):
                         RegisterY = RegisterA;
                         SetNZ(RegisterY);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TSX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "TSX").Select(x => x.Code).Contains(opCode):
                         RegisterX = StackPointer;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TXA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "TXA").Select(x => x.Code).Contains(opCode):
                         RegisterA = RegisterX;
                         SetNZ(RegisterA);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TYA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "TYA").Select(x => x.Code).Contains(opCode):
                         RegisterA = RegisterY;
                         SetNZ(RegisterA);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "TXS").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "TXS").Select(x => x.Code).Contains(opCode):
                         StackPointer = RegisterX;
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "STA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "STA").Select(x => x.Code).Contains(opCode):
                         STA(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "STX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "STX").Select(x => x.Code).Contains(opCode):
                         STX(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "STY").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "STY").Select(x => x.Code).Contains(opCode):
                         STY(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "AND").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "AND").Select(x => x.Code).Contains(opCode):
                         AND(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "EOR").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "EOR").Select(x => x.Code).Contains(opCode):
                         EOR(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "ORA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "ORA").Select(x => x.Code).Contains(opCode):
                         ORA(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "INC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "INC").Select(x => x.Code).Contains(opCode):
                         INC(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "INX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "INX").Select(x => x.Code).Contains(opCode):
                         RegisterX++;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "INY").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "INY").Select(x => x.Code).Contains(opCode):
                         RegisterY++;
                         SetNZ(RegisterY);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "DEC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "DEC").Select(x => x.Code).Contains(opCode):
                         DEC(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "DEX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "DEX").Select(x => x.Code).Contains(opCode):
                         RegisterX--;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "DEY").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "DEY").Select(x => x.Code).Contains(opCode):
                         RegisterY--;
                         SetNZ(RegisterY);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CMP").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CMP").Select(x => x.Code).Contains(opCode):
                         Compare(generalOpCode.AddressingMode, RegisterA);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CPX").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CPX").Select(x => x.Code).Contains(opCode):
                         Compare(generalOpCode.AddressingMode, RegisterX);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CPY").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CPY").Select(x => x.Code).Contains(opCode):
                         Compare(generalOpCode.AddressingMode, RegisterY);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "JMP").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "JMP").Select(x => x.Code).Contains(opCode):
                         JMP(isAbsolute: generalOpCode.Code == 0x4C);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "JSR").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "JSR").Select(x => x.Code).Contains(opCode):
                         StackPushUshort((ushort)(ProgramCounter + 1));
                         ProgramCounter = ReadMemoryUshort(ProgramCounter);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "RTS").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "RTS").Select(x => x.Code).Contains(opCode):
                         ProgramCounter = (ushort)(StackPopUshort() + 1);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "RTI").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "RTI").Select(x => x.Code).Contains(opCode):
                         // ToDo: Guy from the internet uses not used bit from Status Register;
                         Status = StackPop();
                         ClearFlag(SRFlag.Break);
                         ProgramCounter = StackPopUshort();
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BNE").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BNE").Select(x => x.Code).Contains(opCode):
                         Branch(!IsSet(SRFlag.Zero));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BVS").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BVS").Select(x => x.Code).Contains(opCode):
                         Branch(IsSet(SRFlag.VOverflow));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BVC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BVC").Select(x => x.Code).Contains(opCode):
                         Branch(!IsSet(SRFlag.VOverflow));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BPL").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BPL").Select(x => x.Code).Contains(opCode):
                         Branch(!IsSet(SRFlag.Negative));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BMI").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BMI").Select(x => x.Code).Contains(opCode):
                         Branch(IsSet(SRFlag.Negative));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BEQ").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BEQ").Select(x => x.Code).Contains(opCode):
                         Branch(IsSet(SRFlag.Zero));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BCS").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BCS").Select(x => x.Code).Contains(opCode):
                         Branch(IsSet(SRFlag.Carry));
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BCC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BCC").Select(x => x.Code).Contains(opCode):
                         Branch(!IsSet(SRFlag.Carry));
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "BIT").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "BIT").Select(x => x.Code).Contains(opCode):
                         BIT(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "PHA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "PHA").Select(x => x.Code).Contains(opCode):
                         PHA();
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "PHA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "PHA").Select(x => x.Code).Contains(opCode):
                         PHP();
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "PLA").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "PLA").Select(x => x.Code).Contains(opCode):
                         PLA();
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "PLP").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "PLP").Select(x => x.Code).Contains(opCode):
                         PLP();
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "ADC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "ADC").Select(x => x.Code).Contains(opCode):
                         ADC(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SBC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "SBC").Select(x => x.Code).Contains(opCode):
                         SBC(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "LSR").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "LSR").Select(x => x.Code).Contains(opCode):
                         LSR(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "ASL").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "ASL").Select(x => x.Code).Contains(opCode):
                         ASL(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "ROL").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "ROL").Select(x => x.Code).Contains(opCode):
                         ROL(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "ROR").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "ROR").Select(x => x.Code).Contains(opCode):
                         ROR(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SED").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "SED").Select(x => x.Code).Contains(opCode):
                         SetFlag(SRFlag.Decimal);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SEC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "SEC").Select(x => x.Code).Contains(opCode):
                         SetFlag(SRFlag.Carry);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "SEI").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "SEI").Select(x => x.Code).Contains(opCode):
                         SetFlag(SRFlag.Interrupt);
                         break;
 
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLD").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CLD").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.Decimal);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLV").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CLV").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.VOverflow);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLC").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CLC").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.Carry);
                         break;
-                    case var _ when OpCodes.Codes.Where(x => x.Mnemonic == "CLI").Select(x => x.Code).Contains(opCode):
+                    case var _ when opCodes.Where(x => x.Mnemonic == "CLI").Select(x => x.Code).Contains(opCode):
                         ClearFlag(SRFlag.Interrupt);
                         break;
 
@@ -260,13 +271,18 @@ namespace NesEmulator.Core
                         throw new InvalidOperationException();
                 }
 
-                ProgramCounter = (ushort)(ProgramCounter + generalOpCode.Length - 1);
+                if (programCounterState == ProgramCounter)
+                {
+                    ProgramCounter = (ushort)(ProgramCounter + generalOpCode.Length - 1);
+                }
+
+                action(this);
             }
         }
 
         private void LDA(AddressingMode addressingMode)
         {
-            var (address, _)= GetOperandAddress(addressingMode);
+            var (address, _) = GetOperandAddress(addressingMode);
             var value = ReadMemory(address);
 
             RegisterA = value;
@@ -372,11 +388,11 @@ namespace NesEmulator.Core
             var (address, _) = GetOperandAddress(addressingMode);
             var data = ReadMemory(address);
 
-            var difference = (byte)(registerData - data);
+            var difference = registerData - data;
 
             _ = difference >= 0 ? SetFlag(SRFlag.Carry) : ClearFlag(SRFlag.Carry);
 
-            SetNZ(difference);
+            SetNZ((byte)difference);
         }
 
         private void Branch(bool condition)
@@ -384,7 +400,15 @@ namespace NesEmulator.Core
             if (condition)
             {
                 var jump = ReadMemory(ProgramCounter);
-                ProgramCounter = (ushort)(ProgramCounter + 1 + jump);
+                //if (((jump >> 7) & 0x1) == 0)
+                if (jump <= 127)
+                {
+                    ProgramCounter = (ushort)(ProgramCounter + 1 + jump);
+                } else
+                {
+                    // ToDo: Should 255 or 256?
+                    ProgramCounter = (ushort)(ProgramCounter - 256 + jump);
+                }
             }
         }
 
@@ -421,7 +445,7 @@ namespace NesEmulator.Core
             var (address, _) = GetOperandAddress(addressingMode);
             var data = ReadMemory(address);
 
-            var and = RegisterA & data;
+            var and = (byte)(RegisterA & data);
 
             _ = and == 0 ? SetFlag(SRFlag.Zero) : ClearFlag(SRFlag.Zero);
             _ = (data & ((byte)SRFlag.Negative)) > 0 ? SetFlag(SRFlag.Negative) : ClearFlag(SRFlag.Negative);
@@ -433,13 +457,19 @@ namespace NesEmulator.Core
         {
             var statusCopy = Status;
             SetFlag(SRFlag.Break);
+            ClearFlag(SRFlag.Break2);
             StackPush(Status);
             Status = statusCopy;
         }
 
         private void PLA() => RegisterA = StackPop();
 
-        private void PLP() => Status = StackPop();
+        private void PLP()
+        {
+            Status = StackPop();
+            ClearFlag(SRFlag.Break);
+            SetFlag(SRFlag.Break2);
+        }
 
         private void ADC(AddressingMode addressingMode)
         {
@@ -572,7 +602,7 @@ namespace NesEmulator.Core
 
         private void AddToAccumulator(byte data)
         {
-            var sum = RegisterA + data + (IsSet(SRFlag.Carry) ? 1 : 0);
+            var sum = RegisterA + data;// + (IsSet(SRFlag.Carry) ? 1 : 0);
 
             _ = sum > 0xFF ? SetFlag(SRFlag.Carry) : ClearFlag(SRFlag.Carry);
 
@@ -592,7 +622,7 @@ namespace NesEmulator.Core
 
         private byte StackPop()
         {
-            StackPointer--;
+            StackPointer++;
 
             var value = ReadMemory((ushort)(StackOffset + StackPointer));
             SetNZ(value);
@@ -614,14 +644,15 @@ namespace NesEmulator.Core
             return (ushort)((high << 8) | low);
         }
 
-        private void Reset()
+        public void Reset()
         {
             RegisterA = 0;
             RegisterX = 0;
             RegisterY = 0;
-            Status = 0;
 
             ProgramCounter = ReadMemoryUshort(ResetVector);
+            StackPointer = StackReset;
+            Status = 0b00100100;
         }
 
         private (ushort, bool) GetAbsoluteAddress(AddressingMode addressingMode)
@@ -685,7 +716,7 @@ namespace NesEmulator.Core
 
         private byte SetFlag(SRFlag flag) => Status |= (byte)flag;
         private byte ClearFlag(SRFlag flag) => Status = (byte)(Status & ~(byte)flag);
-        private bool IsSet(SRFlag flag) => (Status & (byte)flag) == (byte)flag;
+        private bool IsSet(SRFlag flag) => (Status & ((byte)flag)) != 0;
 
         private void SetNZ(byte value)
         {

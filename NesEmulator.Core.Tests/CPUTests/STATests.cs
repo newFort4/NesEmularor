@@ -20,7 +20,7 @@ namespace NesEmulator.Core.Tests.CPUTests
             [Fact]
             public void STAWorksCorrectly()
             {
-                cpu.LoadAndRun(new byte[] { LDA, SomeValue, STA, (byte)SomeAddress, StopCode });
+                cpu.LoadAndRun(new byte[] { LDA, SomeValue, STA, (byte)SomeAddress, BRK });
 
                 Assert.Equal(cpu.ReadMemory(SomeAddress), SomeValue);
             }
@@ -46,7 +46,7 @@ namespace NesEmulator.Core.Tests.CPUTests
                     LDA, SomeValue,
                     LDX, 4,
                     STA, (byte)SomeAddress,
-                    StopCode
+                    BRK
                 });
 
                 Assert.Equal(cpu.ReadMemory(SomeAddress + 4), SomeValue);

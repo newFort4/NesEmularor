@@ -13,7 +13,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void LDXWithValueWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDX, SomeValue, StopCode });
+            cpu.LoadAndRun(new byte[] { LDX, SomeValue, BRK });
 
             Assert.Equal(cpu.RegisterX, SomeValue);
         }
@@ -21,7 +21,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void LDXWithNonZeroWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDX, 0x01, StopCode });
+            cpu.LoadAndRun(new byte[] { LDX, 0x01, BRK });
 
             AssertFlag(SRFlag.Zero, false);
         }
@@ -29,7 +29,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void LDXWithPositiveWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDX, 0x01, StopCode });
+            cpu.LoadAndRun(new byte[] { LDX, 0x01, BRK });
 
             AssertFlag(SRFlag.Negative, false);
         }
@@ -37,7 +37,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void LDXWithZeroWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDX, AllZeroes, StopCode });
+            cpu.LoadAndRun(new byte[] { LDX, AllZeroes, BRK });
 
             AssertFlag(SRFlag.Zero, true);
         }
@@ -45,7 +45,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         [Fact]
         public void LDXWithNegativeWorks()
         {
-            cpu.LoadAndRun(new byte[] { LDX, AllOnes, StopCode });
+            cpu.LoadAndRun(new byte[] { LDX, AllOnes, BRK });
 
             AssertFlag(SRFlag.Negative, true);
         }
