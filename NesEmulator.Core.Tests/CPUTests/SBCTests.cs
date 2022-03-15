@@ -21,7 +21,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         {
             cpu.LoadAndRun(new byte[] { CLC, LDA, 14, SBC, 12, BRK });
 
-            Assert.Equal(2, cpu.RegisterA);
+            Assert.Equal(1, cpu.RegisterA);
         }
 
         [Fact]
@@ -29,7 +29,135 @@ namespace NesEmulator.Core.Tests.CPUTests
         {
             cpu.LoadAndRun(new byte[] { SEC, LDA, 255, SBC, 1, BRK });
 
-            Assert.Equal(255, cpu.RegisterA);
+            Assert.Equal(254, cpu.RegisterA);
+        }
+
+        [Fact]
+        public void SBCSetsNegativeFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 12, SBC, 13, BRK });
+
+            AssertFlag(SRFlag.Negative, true);
+        }
+
+        [Fact]
+        public void SBCSetsNegativeFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 12, SBC, 14, BRK });
+
+            AssertFlag(SRFlag.Negative, true);
+        }
+
+        [Fact]
+        public void SBCClearsNegativeFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 14, SBC, 13, BRK });
+
+            AssertFlag(SRFlag.Negative, false);
+        }
+
+        [Fact]
+        public void SBCClearsNegativeFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 13, SBC, 13, BRK });
+
+            AssertFlag(SRFlag.Negative, false);
+        }
+
+        [Fact]
+        public void SBCSetsZeroFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 12, SBC, 11, BRK });
+
+            AssertFlag(SRFlag.Zero, true);
+        }
+
+        [Fact]
+        public void SBCSetsZeroFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 12, SBC, 12, BRK });
+
+            AssertFlag(SRFlag.Zero, true);
+        }
+
+        [Fact]
+        public void SBCClearsZeroFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 15, SBC, 13, BRK });
+
+            AssertFlag(SRFlag.Zero, false);
+        }
+
+        [Fact]
+        public void SBCClearsZeroFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 13, SBC, 12, BRK });
+
+            AssertFlag(SRFlag.Zero, false);
+        }
+
+        [Fact]
+        public void SBCSetsCarryFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 13, SBC, 12, BRK });
+
+            AssertFlag(SRFlag.Carry, true);
+        }
+
+        [Fact]
+        public void SBCSetsCarryFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 12, SBC, 12, BRK });
+
+            AssertFlag(SRFlag.Carry, true);
+        }
+
+        [Fact]
+        public void SBCClearsCarryFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 12, SBC, 12, BRK });
+
+            AssertFlag(SRFlag.Carry, false);
+        }
+
+        [Fact]
+        public void SBCClearsCarryFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 13, SBC, 14, BRK });
+
+            AssertFlag(SRFlag.Carry, false);
+        }
+
+        [Fact]
+        public void SBCSetsOverflowFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 128, SBC, 0, BRK });
+
+            AssertFlag(SRFlag.VOverflow, true);
+        }
+
+        [Fact]
+        public void SBCSetsOverflowFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 128, SBC, 1, BRK });
+
+            AssertFlag(SRFlag.VOverflow, true);
+        }
+
+        [Fact]
+        public void SBCClearsOverflowFlagWithoutCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { CLC, LDA, 129, SBC, 0, BRK });
+
+            AssertFlag(SRFlag.VOverflow, false);
+        }
+
+        [Fact]
+        public void SBCClearsOverflowFlagWithCarryFlag()
+        {
+            cpu.LoadAndRun(new byte[] { SEC, LDA, 129, SBC, 1, BRK });
+
+            AssertFlag(SRFlag.VOverflow, false);
         }
     }
 }

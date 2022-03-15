@@ -488,7 +488,7 @@ namespace NesEmulator.Core
             var (address, pageCross) = GetOperandAddress(addressingMode);
             var value = ReadMemory(address);
 
-            AddToAccumulator((byte)(~value + 1));
+            AddToAccumulator((byte)~value);
 
             if (pageCross)
             {
@@ -720,7 +720,7 @@ namespace NesEmulator.Core
         private void SetNZ(byte value)
         {
             _ = value == 0 ? SetFlag(SRFlag.Zero) : ClearFlag(SRFlag.Zero);
-            _ = (value & ((byte)SRFlag.Negative)) != 0 ? SetFlag(SRFlag.Negative) : ClearFlag(SRFlag.Negative);
+            _ = value > 127 ? SetFlag(SRFlag.Negative) : ClearFlag(SRFlag.Negative);
         }
 
         public byte ReadMemory(ushort address) => memory[address];
