@@ -30,7 +30,7 @@ namespace NesEmulator.Core.Tests.CPUTests.Branches
         [Fact]
         public void BEQWorksCorrectlyForNegativeJump()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllOnes, BEQ, 3, LDA, SomeValue, BRK, BEQ, 0xFC, LDA, 0x32, BRK });
+            cpu.LoadAndRun(new byte[] { LDA, AllOnes, BEQ, 3, LDA, SomeValue, BRK, BEQ, 0xFB, LDA, 0x32, BRK });
 
             Assert.Equal(cpu.RegisterA, SomeValue);
         }

@@ -30,7 +30,7 @@ namespace NesEmulator.Core.Tests.CPUTests.Branches
         [Fact]
         public void BNEWorksCorrectlyForNegativeJump()
         {
-            cpu.LoadAndRun(new byte[] { LDA, AllOnes, BNE, 3, LDA, SomeValue, BRK, BNE, 252, LDA, 0x32, BRK });
+            cpu.LoadAndRun(new byte[] { LDA, AllOnes, BNE, 3, LDA, SomeValue, BRK, BNE, 0xFB, LDA, 0x32, BRK });
 
             Assert.Equal(cpu.RegisterA, SomeValue);
         }

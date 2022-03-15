@@ -67,8 +67,7 @@ namespace NesEmulator.Core
                 switch (opCode)
                 {
                     case var _ when opCodes.Where(x => x.Mnemonic == "BRK").Select(x => x.Code).Contains(opCode):
-                        //return;
-                        break;
+                        return;
 
                     case var _ when opCodes.Where(x => x.Mnemonic == "NOP").Select(x => x.Code).Contains(opCode):
                         break;
@@ -407,7 +406,7 @@ namespace NesEmulator.Core
                 } else
                 {
                     // ToDo: Should 255 or 256?
-                    ProgramCounter = (ushort)(ProgramCounter - 256 + jump);
+                    ProgramCounter = (ushort)(ProgramCounter - 255 + jump);
                 }
             }
         }
@@ -489,7 +488,7 @@ namespace NesEmulator.Core
             var (address, pageCross) = GetOperandAddress(addressingMode);
             var value = ReadMemory(address);
 
-            AddToAccumulator((byte)(((byte)~value) + 1));
+            AddToAccumulator((byte)(~value + 1));
 
             if (pageCross)
             {
@@ -602,7 +601,7 @@ namespace NesEmulator.Core
 
         private void AddToAccumulator(byte data)
         {
-            var sum = RegisterA + data;// + (IsSet(SRFlag.Carry) ? 1 : 0);
+            var sum = RegisterA + data + (IsSet(SRFlag.Carry) ? 1 : 0);
 
             _ = sum > 0xFF ? SetFlag(SRFlag.Carry) : ClearFlag(SRFlag.Carry);
 
