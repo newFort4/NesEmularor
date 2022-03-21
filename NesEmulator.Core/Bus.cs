@@ -5,6 +5,7 @@ namespace NesEmulator.Core
     public class Bus
     {
         public byte[] CPUVRAM { get; } = new byte[2048];
+        public readonly ROM ROM;
 
         private const ushort MirrorsLength = 0x1FFF;
 
@@ -12,6 +13,11 @@ namespace NesEmulator.Core
         private const ushort RAMMirrorsEnd = RAM + MirrorsLength;
         private const ushort PPURegisters = 0x2000;
         private const ushort PPURegistersMirrorsEnd = PPURegisters + MirrorsLength;
+
+        public Bus(ROM rom)
+        {
+            ROM = rom;
+        }
 
         public byte ReadMemory(ushort address)
         {
@@ -26,6 +32,8 @@ namespace NesEmulator.Core
                     // ToDo: Implement PPU addresses
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
                     throw new NotImplementedException("PPU addresses are not implemented yet.");
+                case >= 0x8000 and <= 0xFFFF:
+                    return ReadPRGROM(address);
                 default:
                     return 0;
             }
@@ -45,6 +53,8 @@ namespace NesEmulator.Core
                     // ToDo: Implement PPU addresses
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
                     throw new NotImplementedException("PPU addresses are not implemented yet.");
+                case >= 0x8000 and <= 0xFFFF:
+                    throw new InvalidOperationException("Attempt to write to Cartridge ROM space.");
                 default:
                     break;
             }
@@ -65,6 +75,18 @@ namespace NesEmulator.Core
 
             WriteMemory(position, low);
             WriteMemory((ushort)(position + 1), high);
+        }
+
+        public byte ReadPRGROM(ushort address)
+        {
+            address -= 0x8000;
+
+            if (ROM.PRGROM.Length == 0x4000 && address >= 0x4000)
+            {
+                address &= 0x4000;
+            }
+
+            return ROM.PRGROM[address];
         }
     }
 }

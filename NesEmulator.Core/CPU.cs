@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace NesEmulator.Core
@@ -17,13 +18,15 @@ namespace NesEmulator.Core
         private ushort ProgramCounter { get; set; } = 0;
         private byte StackPointer { get; set; } = StackReset;
 
-        private const ushort ResetVector = 0xFFFC;
+        // private const ushort ResetVector = 0xFFFC;
         private const byte StackReset = 0xFD;
-        public const ushort ProgramOffset = 0x0600;
+        public const ushort ProgramOffset = 0x8600;
 
         private const ushort StackOffset = 0x0100;
 
-        public Bus Bus { get; } = new Bus();
+        public readonly Bus Bus;
+
+        public CPU() => Bus = new Bus(new ROM(File.ReadAllBytes("snake.nes")));
 
         public void LoadAndRun(byte[] program)
         {
@@ -43,7 +46,7 @@ namespace NesEmulator.Core
                 WriteMemory((ushort)(ProgramOffset + i), program[i]);
             }
 
-            WriteMemoryUshort(ResetVector, ProgramOffset);
+            // WriteMemoryUshort(ResetVector, ProgramOffset);
         }
 
         public void Run()
