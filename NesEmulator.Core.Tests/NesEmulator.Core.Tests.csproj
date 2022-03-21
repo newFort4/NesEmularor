@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NesEmulator.Core\NesEmulator.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CPUTests\" />
+    <Folder Include="CPUTests\Branches\" />
+    <Folder Include="CPUTests\Compares\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="coveragereport\icon_star_dark.svg" />
+    <None Remove="coveragereport\icon_info-circled.svg" />
+    <None Remove="coveragereport\NesEmulator.Core_OpCode.html" />
+    <None Remove="coveragereport\icon_search-minus.svg" />
+    <None Remove="coveragereport\icon_minus.svg" />
+    <None Remove="coveragereport\icon_minus_dark.svg" />
+    <None Remove="coveragereport\index.html" />
+    <None Remove="coveragereport\icon_fork_dark.svg" />
+    <None Remove="coveragereport\NesEmulator.Core_CPU.html" />
+    <None Remove="coveragereport\icon_fork.svg" />
+    <None Remove="coveragereport\index.htm" />
+    <None Remove="coveragereport\icon_star.svg" />
+    <None Remove="coveragereport\icon_up-dir_active.svg" />
+    <None Remove="coveragereport\icon_up-dir.svg" />
+    <None Remove="coveragereport\icon_search-plus.svg" />
+    <None Remove="coveragereport\icon_info-circled_dark.svg" />
+    <None Remove="coveragereport\icon_wrench_dark.svg" />
+    <None Remove="coveragereport\main.js" />
+    <None Remove="coveragereport\icon_search-minus_dark.svg" />
+    <None Remove="coveragereport\icon_down-dir_active.svg" />
+    <None Remove="coveragereport\icon_cube.svg" />
+    <None Remove="coveragereport\NesEmulator.Core_OpCodes.html" />
+    <None Remove="coveragereport\icon_cube_dark.svg" />
+    <None Remove="coveragereport\report.css" />
+    <None Remove="coveragereport\icon_down-dir_active_dark.svg" />
+    <None Remove="coveragereport\icon_plus.svg" />
+    <None Remove="coveragereport\icon_sponsor.svg" />
+    <None Remove="coveragereport\icon_search-plus_dark.svg" />
+    <None Remove="coveragereport\icon_plus_dark.svg" />
+    <None Remove="coveragereport\class.js" />
+    <None Remove="coveragereport\icon_wrench.svg" />
+    <None Remove="coverlet.collector" />
+    <Content Remove="TestResults\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="nestest.nes">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
