@@ -19,11 +19,11 @@ namespace NesEmulator.Core
 
         private const ushort ResetVector = 0xFFFC;
         private const byte StackReset = 0xFD;
-        public const ushort ProgramOffset = 0x0600;//0xC000;//0x0600;
+        public const ushort ProgramOffset = 0x0600;
 
         private const ushort StackOffset = 0x0100;
 
-        public byte[] memory { get; set; } = new byte[ushort.MaxValue + 1];
+        public Bus Bus { get; } = new Bus();
 
         public void LoadAndRun(byte[] program)
         {
@@ -649,7 +649,8 @@ namespace NesEmulator.Core
             RegisterX = 0;
             RegisterY = 0;
 
-            ProgramCounter = ReadMemoryUshort(ResetVector);
+            // ToDo: Should read ResetVector, but with the current implementation of bus, this is not possible.
+            ProgramCounter = ProgramOffset;//ReadMemoryUshort(ResetVector);
             StackPointer = StackReset;
             Status = 0b00100100;
         }
@@ -723,24 +724,10 @@ namespace NesEmulator.Core
             _ = value > 127 ? SetFlag(SRFlag.Negative) : ClearFlag(SRFlag.Negative);
         }
 
-        public byte ReadMemory(ushort address) => memory[address];
-        public byte WriteMemory(ushort address, byte value) => memory[address] = value;
+        public byte ReadMemory(ushort address) => Bus.ReadMemory(address);
+        public void WriteMemory(ushort address, byte data) => Bus.WriteMemory(address, data);
 
-        private ushort ReadMemoryUshort(ushort position)
-        {
-            var low = (ushort) ReadMemory(position);
-            var high = (ushort) ReadMemory((ushort)(position + 1));
-
-            return (ushort)((high << 8) | (low));
-        }
-
-        private void WriteMemoryUshort(ushort position, ushort data)
-        {
-            var high = (byte) (data >> 8);
-            var low = (byte) (data & 0xFF);
-
-            WriteMemory(position, low);
-            WriteMemory((ushort)(position + 1), high);
-        }
+        private ushort ReadMemoryUshort(ushort position) => Bus.ReadMemoryUshort(position);
+        private void WriteMemoryUshort(ushort position, ushort data) => Bus.WriteMemoryUshort(position, data);
     }
 }
