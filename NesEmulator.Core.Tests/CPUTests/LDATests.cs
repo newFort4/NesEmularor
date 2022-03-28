@@ -7,7 +7,7 @@ namespace NesEmulator.Core.Tests.CPUTests
     {
         public class LDAImmediateTests : LDATests
         {
-            private readonly byte LDA = OpCodes
+            private readonly byte LDA = OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Immediate)
                 .Code;
@@ -56,7 +56,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         // ToDo: Check flags
         public class LDAZeroPageTests : LDATests
         {
-            private readonly byte LDA = OpCodes
+            private readonly byte LDA = OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.ZeroPage)
                 .Code;
@@ -75,7 +75,7 @@ namespace NesEmulator.Core.Tests.CPUTests
         // ToDo: Check flags
         public class LDAAbsoluteTests : LDATests
         {
-            private readonly byte LDA = OpCodes
+            private readonly byte LDA = OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Absolute)
                 .Code;

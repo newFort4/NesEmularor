@@ -5,14 +5,14 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class STATests : CPUBaseTests
     {
-        private readonly byte LDA = OpCodes
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Immediate)
             .Code;
 
         public class STAZeroPageTests : STATests
         {
-            private readonly byte STA = OpCodes
+            private readonly byte STA = OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "STA" && x.AddressingMode == AddressingMode.ZeroPage)
                 .Code;
@@ -28,12 +28,12 @@ namespace NesEmulator.Core.Tests.CPUTests
 
         public class STAZeroPageXTests : STATests
         {
-            private readonly byte STA = OpCodes
+            private readonly byte STA = OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "STA" && x.AddressingMode == AddressingMode.ZeroPageX)
                 .Code;
 
-            private readonly byte LDX = OpCodes
+            private readonly byte LDX = OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "LDX" && x.AddressingMode == AddressingMode.Immediate)
                 .Code;

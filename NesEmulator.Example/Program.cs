@@ -26,7 +26,7 @@ cpu.RunWithCallback(cpu =>
         PresentScreen();
     }
 
-    Thread.Sleep(TimeSpan.FromMilliseconds(0.7));
+    // Thread.Sleep(TimeSpan.FromMilliseconds(0.7));
 });
 
 void ReadInput()

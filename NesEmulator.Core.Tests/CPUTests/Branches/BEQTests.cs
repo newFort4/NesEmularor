@@ -5,8 +5,8 @@ namespace NesEmulator.Core.Tests.CPUTests.Branches
 {
     public class BEQTests : CPUBaseTests
     {
-        private readonly byte BEQ = OpCodes.Codes.Single(x => x.Mnemonic == nameof(BEQ)).Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte BEQ = OpCode.Codes.Single(x => x.Mnemonic == nameof(BEQ)).Code;
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(LDA) && x.AddressingMode == AddressingMode.Immediate)
             .Code;

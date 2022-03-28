@@ -5,11 +5,11 @@ namespace NesEmulator.Core.Tests.CPUTests.Compares
 {
     public class CMPTests : CPUBaseTests
     {
-        private readonly byte CMP = OpCodes
+        private readonly byte CMP = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(CMP) && x.AddressingMode == AddressingMode.Immediate)
             .Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(LDA) && x.AddressingMode == AddressingMode.Immediate)
             .Code;

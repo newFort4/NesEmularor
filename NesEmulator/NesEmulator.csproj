@@ -31,6 +31,7 @@
     <LinkMode>None</LinkMode>
     <AOTMode>None</AOTMode>
     <LangVersion>latest</LangVersion>
+    <XamMacArch>x86_64</XamMacArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

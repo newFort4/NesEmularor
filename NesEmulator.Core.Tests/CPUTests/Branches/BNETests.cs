@@ -5,8 +5,8 @@ namespace NesEmulator.Core.Tests.CPUTests.Branches
 {
     public class BNETests : CPUBaseTests
     {
-        private readonly byte BNE = OpCodes.Codes.Single(x => x.Mnemonic == nameof(BNE)).Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte BNE = OpCode.Codes.Single(x => x.Mnemonic == nameof(BNE)).Code;
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(LDA) && x.AddressingMode == AddressingMode.Immediate)
             .Code;

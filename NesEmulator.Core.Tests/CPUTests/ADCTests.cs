@@ -5,13 +5,13 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class ADCTests : CPUBaseTests
     {
-        private readonly byte ADC = OpCodes
+        private readonly byte ADC = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(ADC) && x.AddressingMode == AddressingMode.Immediate)
             .Code;
-        private readonly byte CLC = OpCodes.Codes.Single(x => x.Mnemonic == nameof(CLC)).Code;
-        private readonly byte SEC = OpCodes.Codes.Single(x => x.Mnemonic == nameof(SEC)).Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte CLC = OpCode.Codes.Single(x => x.Mnemonic == nameof(CLC)).Code;
+        private readonly byte SEC = OpCode.Codes.Single(x => x.Mnemonic == nameof(SEC)).Code;
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Immediate)
             .Code;

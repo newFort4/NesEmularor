@@ -5,7 +5,7 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class LDYTests : CPUBaseTests
     {
-        private readonly byte LDY = OpCodes
+        private readonly byte LDY = OpCode
             .Codes
             .Single(x => x.Mnemonic == "LDY" && x.AddressingMode == AddressingMode.Immediate)
             .Code;

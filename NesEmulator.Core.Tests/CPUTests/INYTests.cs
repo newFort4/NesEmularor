@@ -5,15 +5,15 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class INYTests : CPUBaseTests
     {
-        private readonly byte INY = OpCodes
+        private readonly byte INY = OpCode
             .Codes
             .Single(x => x.Mnemonic == "INY" && x.AddressingMode == AddressingMode.NoneAddressing)
             .Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Immediate)
             .Code;
-        private readonly byte TAY = OpCodes
+        private readonly byte TAY = OpCode
             .Codes
             .Single(x => x.Mnemonic == "TAY" && x.AddressingMode == AddressingMode.NoneAddressing)
             .Code;

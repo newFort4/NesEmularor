@@ -15,6 +15,8 @@ namespace NesEmulator
 	{
         #region Computed Properties
         public MonoMacGameView Game { get; set; }
+
+        private readonly CPU cpu = new();
         #endregion
 
         #region Private
@@ -44,6 +46,30 @@ namespace NesEmulator
         #endregion
 
         #region Overrides
+        public override void KeyDown(NSEvent theEvent)
+        {
+            // handle key down events here
+            const ushort keyAddress = 0xFF;
+
+            switch (theEvent.CharactersIgnoringModifiers)
+            {
+                case "w":
+                    cpu.WriteMemory(keyAddress, 0x77);
+                    break;
+                case "a":
+                    cpu.WriteMemory(keyAddress, 0x61);
+                    break;
+                case "s":
+                    cpu.WriteMemory(keyAddress, 0x73);
+                    break;
+                case "d":
+                    cpu.WriteMemory(keyAddress, 0x64);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public override void AwakeFromNib()
         {
             base.AwakeFromNib();
@@ -52,9 +78,17 @@ namespace NesEmulator
             ContentView = Game;
             Game.OpenGLContext.View = Game;
 
+            var random = new Random();
+            var screenState = Enumerable
+                .Range(0, 32 * 3 * 32)
+                .Select(x => (byte)x)
+                .ToArray();
+
             Game.Load += (sender, e) =>
             {
                 // ToDo: Initialize settings, load textures and sounds here
+
+                cpu.Reset();
             };
 
             Game.Resize += (sender, e) =>
@@ -63,44 +97,6 @@ namespace NesEmulator
             };
 
             #region Initializating of static logic
-            var cpu = new CPU();
-
-            NSEvent.AddLocalMonitorForEventsMatchingMask(NSEventMask.KeyDown, KeyboardEventHandler);
-
-            NSEvent KeyboardEventHandler(NSEvent keyEvent)
-            {
-                // handle key down events here
-                const ushort keyAddress = 0xFF;
-
-                switch (keyEvent.CharactersIgnoringModifiers)
-                {
-                    case "w":
-                        cpu.WriteMemory(keyAddress, 0x77);
-                        break;
-                    case "a":
-                        cpu.WriteMemory(keyAddress, 0x61);
-                        break;
-                    case "s":
-                        cpu.WriteMemory(keyAddress, 0x73);
-                        break;
-                    case "d":
-                        cpu.WriteMemory(keyAddress, 0x64);
-                        break;
-                    default:
-                        break;
-                }
-
-                return (keyEvent);
-            }
-
-            cpu.Reset();
-
-            var random = new Random();
-            var screenState = Enumerable
-                .Range(0, 32 * 3 * 32)
-                .Select(x => (byte)x)
-                .ToArray();
-
             Color GetColor(byte data)
             {
                 switch (data)
@@ -132,27 +128,6 @@ namespace NesEmulator
                 }
             }
 
-            void UpdateScreen(CPU cpu, byte[] frame)
-            {
-                var frameIdx = 0;
-
-                for (var i = (ushort)0x0200; i < 0x0600; i++)
-                {
-                    var colorIdx = cpu.ReadMemory(i);
-                    var color = GetColor(colorIdx);
-                    var (r, g, b) = (color.R, color.G, color.B);
-
-                    // if (frame[frameIdx] != r || frame[frameIdx + 1] != g || frame[frameIdx + 2] != b)
-                    {
-                        frame[frameIdx] = r;
-                        frame[frameIdx + 1] = g;
-                        frame[frameIdx + 2] = b;
-                    }
-
-                    frameIdx += 3;
-                }
-            }
-
             void RenderGame()
             {
                 var pointer = (0, 31);
@@ -173,6 +148,25 @@ namespace NesEmulator
             Game.UpdateFrame += (sender, e) =>
             {
                 // ToDo: Add any game logic or physics
+                var frameIdx = 0;
+
+                var frame = screenState;
+
+                for (var i = (ushort)0x0200; i < 0x0600; i++)
+                {
+                    var colorIdx = cpu.ReadMemory(i);
+                    var color = GetColor(colorIdx);
+                    var (r, g, b) = (color.R, color.G, color.B);
+
+                    if (frame[frameIdx] != r || frame[frameIdx + 1] != g || frame[frameIdx + 2] != b)
+                    {
+                        frame[frameIdx] = r;
+                        frame[frameIdx + 1] = g;
+                        frame[frameIdx + 2] = b;
+                    }
+
+                    frameIdx += 3;
+                }
             };
 
             void DrawPixel(int x, int y, Color color)
@@ -199,20 +193,20 @@ namespace NesEmulator
 
                 RenderGame();
             };
-            
-            Game.Run(120.0);
 
-            Task.Run(() =>
+            Game.Run(60);
+
+            var cpuTask = new Task(() =>
             {
                 cpu.RunWithCallback(cpu =>
                 {
                     cpu.WriteMemory(0xFE, (byte)(1 + (random.Next() % 15)));
 
-                    UpdateScreen(cpu, screenState);
-
-                    // Thread.Sleep(TimeSpan.FromMilliseconds(0.7));
+                    Thread.Sleep(TimeSpan.FromMilliseconds(0.4125));
                 });
             });
+
+            cpuTask.Start();
         }
         #endregion
     }

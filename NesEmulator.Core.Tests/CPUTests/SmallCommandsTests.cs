@@ -12,15 +12,15 @@ namespace NesEmulator.Core.Tests.CPUTests
         {
             var tuples = new List<Tuple<byte, SRFlag>>
             {
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "SED" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.Decimal),
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "SEC" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.Carry),
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "SEI" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.Interrupt)
@@ -39,19 +39,19 @@ namespace NesEmulator.Core.Tests.CPUTests
         {
             var tuples = new List<Tuple<byte, SRFlag>>
             {
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "CLD" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.Decimal),
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "CLV" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.VOverflow),
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "CLC" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.Carry),
-                new Tuple<byte, SRFlag>(OpCodes
+                new Tuple<byte, SRFlag>(OpCode
                 .Codes
                 .Single(x => x.Mnemonic == "CLI" && x.AddressingMode == AddressingMode.NoneAddressing)
                 .Code, SRFlag.Interrupt)

@@ -1,4 +1,6 @@
-﻿namespace NesEmulator.Core
+﻿using System.Linq;
+
+namespace NesEmulator.Core
 {
     public class OpCode
     {
@@ -8,7 +10,7 @@
         public readonly int Cycles;
         public readonly AddressingMode AddressingMode;
 
-        public OpCode(byte code, string mnemonic, ushort length, int cycles, AddressingMode addressingMode)
+        private OpCode(byte code, string mnemonic, ushort length, int cycles, AddressingMode addressingMode)
         {
             Code = code;
             Mnemonic = mnemonic;
@@ -16,10 +18,7 @@
             Cycles = cycles;
             AddressingMode = addressingMode;
         }
-    }
 
-    public static class OpCodes
-    {
         public static readonly OpCode[] Codes = new OpCode[]
         {
             new OpCode(0x00, "BRK", 1, 7, AddressingMode.NoneAddressing),
@@ -349,5 +348,290 @@
             new OpCode(0x8f, "*SAX", 3, 4, AddressingMode.Absolute),
             new OpCode(0x83, "*SAX", 2, 6, AddressingMode.IndirectX),
         };
+    }
+
+    public static class OpCodes
+    {
+        public static byte[] ADC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(ADC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] AND = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(AND))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] ASL = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(ASL))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BCC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BCC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BCS = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BCS))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BEQ = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BEQ))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BIT = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BIT))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BMI = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BMI))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BNE = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BNE))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BPL = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BPL))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BRK = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BRK))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BVC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BVC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] BVS = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(BVS))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CLC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CLC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CLD = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CLD))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CLI = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CLI))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CLV = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CLV))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CMP = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CMP))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CPX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CPX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] CPY = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(CPY))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] DEC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(DEC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] DEX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(DEX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] DEY = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(DEY))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] EOR = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(EOR))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] INC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(INC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] INX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(INX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] INY = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(INY))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] JMP = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(JMP))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] JSR = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(JSR))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] LDA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(LDA))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] LDX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(LDX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] LDY = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(LDY))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] LSR = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(LSR))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] NOP = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(NOP))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] ORA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(ORA))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] PHA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(PHA))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] PHP = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(PHP))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] PLA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(PLA))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] PLP = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(PLP))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] ROL = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(ROL))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] ROR = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(ROR))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] RTI = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(RTI))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] RTS = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(RTS))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] SBC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(SBC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] SEC = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(SEC))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] SED = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(SED))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] SEI = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(SEI))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] STA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(STA))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] STX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(STX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] STY = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(STY))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] TAX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(TAX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] TAY = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(TAY))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] TSX = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(TSX))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] TXA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(TXA))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] TXS = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(TXS))
+            .Select(x => x.Code)
+            .ToArray();
+        public static byte[] TYA = OpCode
+            .Codes
+            .Where(x => x.Mnemonic == nameof(TYA))
+            .Select(x => x.Code)
+            .ToArray();
+
     }
 }

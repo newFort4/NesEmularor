@@ -5,11 +5,11 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class BITTests : CPUBaseTests
     {
-        private readonly byte BIT = OpCodes
+        private readonly byte BIT = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(BIT) && x.AddressingMode == AddressingMode.Absolute)
             .Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == nameof(LDA) && x.AddressingMode == AddressingMode.Immediate)
             .Code;

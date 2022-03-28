@@ -5,15 +5,15 @@ namespace NesEmulator.Core.Tests.CPUTests
 {
     public class INXTests : CPUBaseTests
     {
-        private readonly byte INX = OpCodes
+        private readonly byte INX = OpCode
             .Codes
             .Single(x => x.Mnemonic == "INX" && x.AddressingMode == AddressingMode.NoneAddressing)
             .Code;
-        private readonly byte LDA = OpCodes
+        private readonly byte LDA = OpCode
             .Codes
             .Single(x => x.Mnemonic == "LDA" && x.AddressingMode == AddressingMode.Immediate)
             .Code;
-        private readonly byte TAX = OpCodes
+        private readonly byte TAX = OpCode
             .Codes
             .Single(x => x.Mnemonic == "TAX" && x.AddressingMode == AddressingMode.NoneAddressing)
             .Code;

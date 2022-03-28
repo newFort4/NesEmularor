@@ -5,8 +5,8 @@ namespace NesEmulator.Core.Tests.CPUTests.Branches
 {
     public class BPLTests : CPUBaseTests
     {
-        private readonly byte BPL = OpCodes.Codes.Single(x => x.Mnemonic == nameof(BPL)).Code;
-        private readonly byte LDA = OpCodes.Codes.Single(x => x.Mnemonic == nameof(LDA) && x.AddressingMode == AddressingMode.Immediate).Code;
+        private readonly byte BPL = OpCode.Codes.Single(x => x.Mnemonic == nameof(BPL)).Code;
+        private readonly byte LDA = OpCode.Codes.Single(x => x.Mnemonic == nameof(LDA) && x.AddressingMode == AddressingMode.Immediate).Code;
 
         [Fact]
         public void BPLWorksCorrectlyForPositiveValue()
