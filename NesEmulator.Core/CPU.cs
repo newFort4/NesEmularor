@@ -20,13 +20,14 @@ namespace NesEmulator.Core
 
         // private const ushort ResetVector = 0xFFFC;
         private const byte StackReset = 0xFD;
-        public const ushort ProgramOffset = 0x8600;
+        public readonly ushort ProgramOffset = 0x8600;
 
         private const ushort StackOffset = 0x0100;
 
         public readonly Bus Bus;
 
         public CPU() => Bus = new Bus(new ROM(File.ReadAllBytes("snake.nes")));
+        public CPU(ushort programOffset) : this() => ProgramOffset = programOffset;
 
         public void LoadAndRun(byte[] program)
         {

@@ -15,7 +15,7 @@ namespace NesEmulator.Core.Tests
         protected const byte AllOnesExceptTheLast = 0xFE;
         protected const byte AllZeroes = 0x00;
 
-        protected CPUBaseTests() => cpu = new CPU();
+        protected CPUBaseTests() => cpu = new CPU(0x0600);
 
         protected void AssertFlag(SRFlag flag, bool value)
         {
