@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace NesEmulator.Core
 {
@@ -47,8 +48,6 @@ namespace NesEmulator.Core
             {
                 WriteMemory((ushort)(ProgramOffset + i), program[i]);
             }
-
-            // WriteMemoryUshort(ResetVector, ProgramOffset);
         }
 
         public void Run()

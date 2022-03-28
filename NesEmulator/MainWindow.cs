@@ -198,11 +198,11 @@ namespace NesEmulator
 
             var cpuTask = new Task(() =>
             {
-                cpu.RunWithCallback(cpu =>
+                cpu.RunWithCallback(async cpu =>
                 {
                     cpu.WriteMemory(0xFE, (byte)(1 + (random.Next() % 15)));
 
-                    Thread.Sleep(TimeSpan.FromMilliseconds(0.4125));
+                    await Task.Delay(TimeSpan.FromSeconds(700000.0 / 1000000000)).ConfigureAwait(false);
                 });
             });
 
