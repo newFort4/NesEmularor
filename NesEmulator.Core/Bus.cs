@@ -31,6 +31,7 @@ namespace NesEmulator.Core
                 case >= PPURegisters and <= PPURegistersMirrorsEnd:
                     // ToDo: Implement PPU addresses
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
+                    return 0;
                     throw new NotImplementedException("PPU addresses are not implemented yet.");
                 case >= 0x8000 and <= 0xFFFF:
                     return ReadPRGROM(address);
@@ -52,7 +53,8 @@ namespace NesEmulator.Core
                 case >= PPURegisters and <= PPURegistersMirrorsEnd:
                     // ToDo: Implement PPU addresses
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
-                    throw new NotImplementedException("PPU addresses are not implemented yet.");
+                    // throw new NotImplementedException("PPU addresses are not implemented yet.");
+                    break;
                 case >= 0x8000 and <= 0xFFFF:
                     throw new InvalidOperationException("Attempt to write to Cartridge ROM space.");
                 default:
@@ -77,13 +79,13 @@ namespace NesEmulator.Core
             WriteMemory((ushort)(position + 1), high);
         }
 
-        public byte ReadPRGROM(ushort address)
+        private byte ReadPRGROM(ushort address)
         {
             address -= 0x8000;
 
             if (ROM.PRGROM.Length == 0x4000 && address >= 0x4000)
             {
-                address &= 0x4000;
+                address %= 0x4000;
             }
 
             return ROM.PRGROM[address];

@@ -17,18 +17,19 @@ namespace NesEmulator.Core
 
         public byte Status { get; set; } = 0b00000000;
 
-        private ushort ProgramCounter { get; set; } = 0;
-        private byte StackPointer { get; set; } = StackReset;
+        public ushort ProgramCounter { get; set; } = 0;
+        public byte StackPointer { get; set; } = StackReset;
 
-        // private const ushort ResetVector = 0xFFFC;
+        private const ushort ResetVector = 0xFFFC;
         private const byte StackReset = 0xFD;
-        public readonly ushort ProgramOffset = 0x8600;
+        public readonly ushort? ProgramOffset = null;
 
         private const ushort StackOffset = 0x0100;
 
         public readonly Bus Bus;
 
-        public CPU() => Bus = new Bus(new ROM(File.ReadAllBytes("snake.nes")));
+        public CPU() : this("snake.nes") { }
+        public CPU(string romFile) => Bus = new Bus(new ROM(File.ReadAllBytes(romFile)));
         public CPU(ushort programOffset) : this() => ProgramOffset = programOffset;
 
         public void LoadAndRun(byte[] program)
@@ -55,16 +56,19 @@ namespace NesEmulator.Core
             RunWithCallback((cpu) => { });
         }
 
+        // ToDo: Implement unofficial instructions
         public void RunWithCallback(Action<CPU> action)
         {
             while (true)
             {
                 var opCode = ReadMemory(ProgramCounter);
 
+                var generalOpCode = OpCode.Codes.SingleOrDefault(x => x.Code == opCode);
+
+                action(this);
+
                 ProgramCounter++;
                 var programCounterState = ProgramCounter;
-
-                var generalOpCode = OpCode.Codes.SingleOrDefault(x => x.Code == opCode);
 
                 switch (opCode)
                 {
@@ -212,7 +216,7 @@ namespace NesEmulator.Core
                     case var _ when OpCodes.PHA.Contains(opCode):
                         PHA();
                         break;
-                    case var _ when OpCodes.PHA.Contains(opCode):
+                    case var _ when OpCodes.PHP.Contains(opCode):
                         PHP();
                         break;
                     case var _ when OpCodes.PLA.Contains(opCode):
@@ -265,9 +269,6 @@ namespace NesEmulator.Core
                     case var _ when OpCodes.CLI.Contains(opCode):
                         ClearFlag(SRFlag.Interrupt);
                         break;
-
-                    case 0xFF:
-                        return;
                     default:
                         throw new InvalidOperationException();
                 }
@@ -276,8 +277,6 @@ namespace NesEmulator.Core
                 {
                     ProgramCounter = (ushort)(ProgramCounter + generalOpCode.Length - 1);
                 }
-
-                action(this);
             }
         }
 
@@ -424,6 +423,7 @@ namespace NesEmulator.Core
                 ProgramCounter = address;
             } else
             {
+                // ToDo: Bug with 0x6C.
                 ushort indirectReference;
 
                 if ((address & 0x00FF) == 0x00FF)
@@ -431,7 +431,7 @@ namespace NesEmulator.Core
                     var low = ReadMemory(address);
                     var high = ReadMemory((ushort)(address & 0xFF00));
 
-                    indirectReference = (ushort)((high << 8) & (low));
+                    indirectReference = (ushort)((high << 8) | (low));
                 } else
                 {
                     indirectReference = ReadMemoryUshort(address);
@@ -651,8 +651,7 @@ namespace NesEmulator.Core
             RegisterX = 0;
             RegisterY = 0;
 
-            // ToDo: Should read ResetVector, but with the current implementation of bus, this is not possible.
-            ProgramCounter = ProgramOffset;//ReadMemoryUshort(ResetVector);
+            ProgramCounter = 0xC000; //ProgramOffset ?? ReadMemoryUshort(ResetVector);
             StackPointer = StackReset;
             Status = 0b00100100;
         }

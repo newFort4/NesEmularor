@@ -74,6 +74,8 @@ namespace NesEmulator
         {
             base.AwakeFromNib();
 
+            Title = "David likes Alina";
+
             Game = new MonoMacGameView(ContentView.Frame);
             ContentView = Game;
             Game.OpenGLContext.View = Game;

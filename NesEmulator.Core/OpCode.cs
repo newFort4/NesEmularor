@@ -215,6 +215,8 @@ namespace NesEmulator.Core
             new OpCode(0x08, "PHP", 1, 3, AddressingMode.NoneAddressing),
             new OpCode(0x28, "PLP", 1, 4, AddressingMode.NoneAddressing),
 
+            // ToDo: Implement unofficial instructions
+
             
             /* unofficial */
 
