@@ -3,11 +3,14 @@ using System.Linq;
 
 namespace NesEmulator.Core
 {
+    // ToDo: Refactor
     public class Bus
     {
         public byte[] CPUVRAM { get; } = Enumerable.Repeat((byte)0, 2048).ToArray();
         public readonly ROM ROM;
         public readonly PPU PPU;
+
+        public int Cycles { get; private set; } = 0;
 
         private const ushort MirrorsLength = 0x1FFF;
 
@@ -20,6 +23,12 @@ namespace NesEmulator.Core
         {
             ROM = rom;
             PPU = new(rom.CHRROM, rom.Mirroring);
+        }
+
+        public void Tick(byte cycles)
+        {
+            Cycles += cycles;
+            PPU.Tick((byte)(3 * cycles));
         }
 
         public byte ReadMemory(ushort address)
@@ -38,6 +47,10 @@ namespace NesEmulator.Core
                 case 0x2006:
                 case 0x4014:
                     throw new InvalidOperationException($"Attempt to read from write-only PPU address {address:x}");
+                case 0x2002:
+                    return PPU.ReadStatus();
+                case 0x2004:
+                    return PPU.ReadOAMData();
                 case 0x2007:
                     return PPU.ReadMemory();
                 case >= 0x2008 and <= PPURegistersMirrorsEnd:
@@ -49,6 +62,15 @@ namespace NesEmulator.Core
                 default:
                     return 0;
             }
+        }
+
+        public int? PollNMIStatus()
+        {
+            var result = PPU.NMIInterrupt;
+
+            PPU.NMIInterrupt = null;
+
+            return result;
         }
 
         public void WriteMemory(ushort address, byte data)
@@ -63,6 +85,20 @@ namespace NesEmulator.Core
                     break;
                 case 0x2000:
                     PPU.WriteToControl(data);
+                    break;
+                case 0x2001:
+                    PPU.WriteToMask(data);
+                    break;
+                case 0x2002:
+                    throw new InvalidOperationException("Attempt to write to PPU status register.");
+                case 0x2003:
+                    PPU.WriteToOAMAddress(data);
+                    break;
+                case 0x2004:
+                    PPU.WriteToOAM(data);
+                    break;
+                case 0x2005:
+                    PPU.WriteToScroll(data);
                     break;
                 case 0x2006:
                     PPU.WriteToAddress(data);

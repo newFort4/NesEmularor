@@ -1,4 +1,6 @@
-﻿namespace NesEmulator.Core
+﻿using System;
+
+namespace NesEmulator.Core
 {
     public enum ControlRegisterEnum
     {
@@ -12,11 +14,14 @@
         GenerateNMI = 0b10000000
     }
 
+    // ToDo: Refactor
     public class ControlRegister
     {
         public byte Bits { get; set; } = 0;
 
         public byte VRAMAddIncrement() => (byte)((Bits & (byte)ControlRegisterEnum.VRAMAddIncrement) == 0 ? 1 : 32);
         public void Update(byte data) => Bits = data;
+
+        internal bool GeneraeVBlankNMI() => (Bits & ((byte)ControlRegisterEnum.GenerateNMI)) != 0;
     }
 }

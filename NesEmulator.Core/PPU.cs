@@ -13,6 +13,10 @@ namespace NesEmulator.Core
 
         public byte OAMAddress = 0;
 
+        public int Cycles = 0;
+        public ushort Scanline = 0;
+        public int? NMIInterrupt = null;
+
         public AddressRegister Address { get; set; } = new();
         public ControlRegister Control { get; set; } = new();
         public MaskRegister Mask { get; set; } = new();
@@ -33,6 +37,32 @@ namespace NesEmulator.Core
             PalletTable = Enumerable.Repeat((byte)0, 32).ToArray();
         }
 
+        internal bool Tick(byte cycles)
+        {
+            Cycles += cycles;
+            if (Cycles >= 341)
+            {
+                Cycles -= 341;
+                Scanline++;
+
+                if (Scanline == 241)
+                {
+                    if (Control.GeneraeVBlankNMI()) {
+                        Status.SetVBlankStatus(true);
+                        // ToDo: Should trigger NMI interrupt
+                    }
+                }
+
+                if (Scanline >= 262)
+                {
+                    Scanline = 0;
+                    Status.ResetVBlankStatus();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public byte ReadStatus()
         {
             var data = Status.Snaphot;
@@ -46,7 +76,17 @@ namespace NesEmulator.Core
         public byte ReadOAMData() => OAMData[OAMAddress];
 
         public void WriteToAddress(byte value) => Address.Update(value);
-        public void WriteToControl(byte value) => Control.Update(value);
+
+        public void WriteToControl(byte value)
+        {
+            var beforeNMIInterrupt = Control.GeneraeVBlankNMI();
+            Control.Update(value);
+            if (!beforeNMIInterrupt && Control.GeneraeVBlankNMI() && Status.IsInVBlank())
+            {
+                NMIInterrupt = 1;
+            }    
+        }
+
         public void WriteToMask(byte value) => Mask.Update(value);
         public void WriteToOAMAddress(byte value) => OAMAddress = value;
         public void WriteToOAM(byte value)

@@ -21,6 +21,7 @@ namespace NesEmulator.Core
         public byte StackPointer { get; set; } = StackReset;
 
         private const ushort ResetVector = 0xFFFC;
+        private const ushort NMIVector = 0xFFFA;
         private const byte StackReset = 0xFD;
         public readonly ushort? ProgramOffset = null;
 
@@ -61,6 +62,11 @@ namespace NesEmulator.Core
         {
             while (true)
             {
+                if (Bus.PollNMIStatus() != null)
+                {
+                    InterruptNMI();
+                }
+
                 var opCode = ReadMemory(ProgramCounter);
 
                 var generalOpCode = OpCode.Codes.SingleOrDefault(x => x.Code == opCode);
@@ -278,6 +284,21 @@ namespace NesEmulator.Core
                     ProgramCounter = (ushort)(ProgramCounter + generalOpCode.Length - 1);
                 }
             }
+        }
+
+        private void InterruptNMI()
+        {
+            StackPushUshort(ProgramCounter);
+            var statusClone = Status;
+
+            ClearFlag(SRFlag.Break);
+            SetFlag(SRFlag.Break2);
+            StackPush(Status);
+
+            Status = statusClone;
+            SetFlag(SRFlag.Interrupt);
+            Bus.Tick(2);
+            ProgramCounter = ReadMemory(NMIVector);
         }
 
         private void LDA(AddressingMode addressingMode)
