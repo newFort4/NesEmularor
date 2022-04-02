@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Linq;
 
 namespace NesEmulator.Core
 {
     public class Bus
     {
-        public byte[] CPUVRAM { get; } = new byte[2048];
+        public byte[] CPUVRAM { get; } = Enumerable.Repeat((byte)0, 2048).ToArray();
         public readonly ROM ROM;
+        public readonly PPU PPU;
 
         private const ushort MirrorsLength = 0x1FFF;
 
@@ -17,6 +19,7 @@ namespace NesEmulator.Core
         public Bus(ROM rom)
         {
             ROM = rom;
+            PPU = new(rom.CHRROM, rom.Mirroring);
         }
 
         public byte ReadMemory(ushort address)
@@ -28,11 +31,19 @@ namespace NesEmulator.Core
 
                     // ToDo: Guy from the internet casts it to usize
                     return CPUVRAM[mirrorDownAddress];
-                case >= PPURegisters and <= PPURegistersMirrorsEnd:
+                case 0x2000:
+                case 0x2001:
+                case 0x2003:
+                case 0x2005:
+                case 0x2006:
+                case 0x4014:
+                    throw new InvalidOperationException($"Attempt to read from write-only PPU address {address:x}");
+                case 0x2007:
+                    return PPU.ReadMemory();
+                case >= 0x2008 and <= PPURegistersMirrorsEnd:
                     // ToDo: Implement PPU addresses
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
-                    return 0;
-                    throw new NotImplementedException("PPU addresses are not implemented yet.");
+                    return ReadMemory(mirrorDownAddress);
                 case >= 0x8000 and <= 0xFFFF:
                     return ReadPRGROM(address);
                 default:
@@ -50,15 +61,21 @@ namespace NesEmulator.Core
                     CPUVRAM[mirrorDownAddress] = data;
 
                     break;
-                case >= PPURegisters and <= PPURegistersMirrorsEnd:
-                    // ToDo: Implement PPU addresses
+                case 0x2000:
+                    PPU.WriteToControl(data);
+                    break;
+                case 0x2006:
+                    PPU.WriteToAddress(data);
+                    break;
+                case 0x2007:
+                    PPU.WriteData(data);
+                    break;
+                case >= 0x2008 and <= PPURegistersMirrorsEnd:
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
-                    // throw new NotImplementedException("PPU addresses are not implemented yet.");
+                    WriteMemory(mirrorDownAddress, data);
                     break;
                 case >= 0x8000 and <= 0xFFFF:
                     throw new InvalidOperationException("Attempt to write to Cartridge ROM space.");
-                default:
-                    break;
             }
         }
 

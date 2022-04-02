@@ -9,7 +9,7 @@ namespace NesEmulator.Example
         {
             return $"{cpu.ProgramCounter:X4}\t" +
                 $"{cpu.ReadMemory(cpu.ProgramCounter):X4}\t" +
-                $"{OpCode.Codes.FirstOrDefault(x => x.Code == cpu.ReadMemory(cpu.ProgramCounter)).Mnemonic}" +
+                $"{OpCode.Codes.FirstOrDefault(x => x.Code == cpu.ReadMemory(cpu.ProgramCounter)).Mnemonic}\t" +
                 $"A:{cpu.RegisterA:X4} X:{cpu.RegisterX:X4} Y:{cpu.RegisterY:X4} P:{cpu.Status:X4} SP:{cpu.StackPointer:X4}";
         }
 	}

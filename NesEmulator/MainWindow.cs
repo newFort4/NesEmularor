@@ -19,10 +19,6 @@ namespace NesEmulator
         private readonly CPU cpu = new();
         #endregion
 
-        #region Private
-        private readonly Random random = new();
-        #endregion
-
         #region Constructors
 
         // Called when created from unmanaged code
@@ -73,8 +69,6 @@ namespace NesEmulator
         public override void AwakeFromNib()
         {
             base.AwakeFromNib();
-
-            Title = "David likes Alina";
 
             Game = new MonoMacGameView(ContentView.Frame);
             ContentView = Game;
@@ -206,7 +200,7 @@ namespace NesEmulator
                 {
                     cpu.WriteMemory(0xFE, (byte)(1 + (random.Next() % 15)));
 
-                    if (operationCounts % 8 == 0)
+                    if (operationCounts % 2 == 0)
                     {
                         Thread.Sleep(TimeSpan.FromMilliseconds(1));
                     }
