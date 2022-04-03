@@ -672,7 +672,7 @@ namespace NesEmulator.Core
             RegisterX = 0;
             RegisterY = 0;
 
-            ProgramCounter = 0xC000; //ProgramOffset ?? ReadMemoryUshort(ResetVector);
+            ProgramCounter = ProgramOffset ?? ReadMemoryUshort(ResetVector);
             //ProgramCounter = ProgramOffset ?? ReadMemoryUshort(ResetVector);
             StackPointer = StackReset;
             Status = 0b00100100;

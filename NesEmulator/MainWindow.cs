@@ -16,7 +16,7 @@ namespace NesEmulator
         #region Computed Properties
         public MonoMacGameView Game { get; set; }
 
-        private readonly CPU cpu = new();
+        private CPU cpu;
         #endregion
 
         #region Constructors
@@ -83,8 +83,17 @@ namespace NesEmulator
             Game.Load += (sender, e) =>
             {
                 // ToDo: Initialize settings, load textures and sounds here
+                cpu = new("Alter_Ego.nes");
 
                 cpu.Reset();
+
+                //screenState = Array.Empty<byte>();
+                //foreach (var tile in Enumerable.Repeat(0, 1).Select(x => Core.Frame.ShowFrame(cpu.Bus.ROM.CHRROM, 1, x).Data))
+                //{
+                //    screenState = screenState.Concat(tile).ToArray();
+                //}
+                var tileFrame = Core.Frame.ShowFrame(cpu.Bus.ROM.CHRROM, 1, 255);
+                screenState = tileFrame.Data;
             };
 
             Game.Resize += (sender, e) =>
@@ -126,14 +135,15 @@ namespace NesEmulator
 
             void RenderGame()
             {
-                var pointer = (0, 31);
+                var pointer = (0, 240);
+
                 for (var i = 0; i < screenState.Length; i += 3)
                 {
                     var color = Color.FromArgb(screenState[i], screenState[i + 1], screenState[i + 2]);
                     DrawPixel(pointer.Item1, pointer.Item2, color);
                     pointer = (pointer.Item1 + 1, pointer.Item2);
 
-                    if (((i / 3) + 1) % 32 == 0)
+                    if (((i / 3) + 1) % 256 == 0)
                     {
                         pointer = (0, pointer.Item2 - 1);
                     }
@@ -144,25 +154,25 @@ namespace NesEmulator
             Game.UpdateFrame += (sender, e) =>
             {
                 // ToDo: Add any game logic or physics
-                var frameIdx = 0;
+                //var frameIdx = 0;
 
-                var frame = screenState;
+                //var frame = screenState;
 
-                for (var i = (ushort)0x0200; i < 0x0600; i++)
-                {
-                    var colorIdx = cpu.ReadMemory(i);
-                    var color = GetColor(colorIdx);
-                    var (r, g, b) = (color.R, color.G, color.B);
+                //for (var i = (ushort)0x0200; i < 0x0600; i++)
+                //{
+                //    var colorIdx = cpu.ReadMemory(i);
+                //    var color = GetColor(colorIdx);
+                //    var (r, g, b) = (color.R, color.G, color.B);
 
-                    if (frame[frameIdx] != r || frame[frameIdx + 1] != g || frame[frameIdx + 2] != b)
-                    {
-                        frame[frameIdx] = r;
-                        frame[frameIdx + 1] = g;
-                        frame[frameIdx + 2] = b;
-                    }
+                //    if (frame[frameIdx] != r || frame[frameIdx + 1] != g || frame[frameIdx + 2] != b)
+                //    {
+                //        frame[frameIdx] = r;
+                //        frame[frameIdx + 1] = g;
+                //        frame[frameIdx + 2] = b;
+                //    }
 
-                    frameIdx += 3;
-                }
+                //    frameIdx += 3;
+                //}
             };
 
             void DrawPixel(int x, int y, Color color)
@@ -185,7 +195,7 @@ namespace NesEmulator
                 GL.MatrixMode(MatrixMode.Projection);
 
                 GL.LoadIdentity();
-                GL.Ortho(0, 32, 0, 32, 0.0, 1.0);
+                GL.Ortho(0, 256, 0, 240, 0.0, 1.0);
 
                 RenderGame();
             };
@@ -194,19 +204,6 @@ namespace NesEmulator
 
             var cpuTask = new Task(() =>
             {
-                var operationCounts = 0;
-
-                cpu.RunWithCallback(cpu =>
-                {
-                    cpu.WriteMemory(0xFE, (byte)(1 + (random.Next() % 15)));
-
-                    if (operationCounts % 2 == 0)
-                    {
-                        Thread.Sleep(TimeSpan.FromMilliseconds(1));
-                    }
-
-                    operationCounts++;
-                });
             });
 
             cpuTask.Start();
