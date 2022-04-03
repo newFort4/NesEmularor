@@ -92,7 +92,7 @@ namespace NesEmulator
                 //{
                 //    screenState = screenState.Concat(tile).ToArray();
                 //}
-                var tileFrame = Core.Frame.ShowFrame(cpu.Bus.ROM.CHRROM, 1, 255);
+                var tileFrame = Core.Frame.ShowTileBank(cpu.Bus.ROM.CHRROM, 0);
                 screenState = tileFrame.Data;
             };
 
@@ -200,7 +200,7 @@ namespace NesEmulator
                 RenderGame();
             };
 
-            Game.Run(60);
+            Game.Run(30);
 
             var cpuTask = new Task(() =>
             {
