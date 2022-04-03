@@ -82,6 +82,13 @@ namespace NesEmulator.Core
                         return;
 
                     case var _ when OpCodes.NOP.Contains(opCode):
+                        var (address, pageCross) = GetOperandAddress(generalOpCode.AddressingMode);
+                        var data = ReadMemory(address);
+
+                        if (pageCross)
+                        {
+                            Bus.Tick(1);
+                        }
                         break;
 
                     case var _ when OpCodes.LDA.Contains(opCode):
@@ -279,6 +286,8 @@ namespace NesEmulator.Core
                         throw new InvalidOperationException();
                 }
 
+                Bus.Tick(generalOpCode.Cycles);
+
                 if (programCounterState == ProgramCounter)
                 {
                     ProgramCounter = (ushort)(ProgramCounter + generalOpCode.Length - 1);
@@ -297,35 +306,50 @@ namespace NesEmulator.Core
 
             Status = statusClone;
             SetFlag(SRFlag.Interrupt);
-            Bus.Tick(2);
+            Bus.Tick(2); // ToDo: Correct cycles
             ProgramCounter = ReadMemory(NMIVector);
         }
 
         private void LDA(AddressingMode addressingMode)
         {
-            var (address, _) = GetOperandAddress(addressingMode);
+            var (address, pageCross) = GetOperandAddress(addressingMode);
             var value = ReadMemory(address);
 
             RegisterA = value;
             SetNZ(RegisterA);
+
+            if (pageCross)
+            {
+                Bus.Tick(1);
+            }
         }
 
         private void LDX(AddressingMode addressingMode)
         {
-            var (address, _) = GetOperandAddress(addressingMode);
+            var (address, pageCross) = GetOperandAddress(addressingMode);
             var value = ReadMemory(address);
 
             RegisterX = value;
             SetNZ(RegisterX);
+
+            if (pageCross)
+            {
+                Bus.Tick(1);
+            }
         }
 
         private void LDY(AddressingMode addressingMode)
         {
-            var (address, _) = GetOperandAddress(addressingMode);
+            var (address, pageCross) = GetOperandAddress(addressingMode);
             var value = ReadMemory(address);
 
             RegisterY = value;
             SetNZ(RegisterY);
+
+            if (pageCross)
+            {
+                Bus.Tick(1);
+            }
         }
 
         private void STA(AddressingMode addressingMode) => StoreRegister(addressingMode, RegisterA);
@@ -349,7 +373,7 @@ namespace NesEmulator.Core
 
             if (pageCross)
             {
-                // ToDo: Add bus tick
+                Bus.Tick(1);
             }
         }
 
@@ -364,7 +388,7 @@ namespace NesEmulator.Core
 
             if (pageCross)
             {
-                // ToDo: Add bus tick
+                Bus.Tick(1);
             }
         }
 
@@ -379,7 +403,7 @@ namespace NesEmulator.Core
 
             if (pageCross)
             {
-                // ToDo: Add bus tick
+                Bus.Tick(1);
             }
         }
 
@@ -406,7 +430,7 @@ namespace NesEmulator.Core
         // A.k.A. This implements CMP, CPX, CPY.
         private void Compare(AddressingMode addressingMode, byte registerData)
         {
-            var (address, _) = GetOperandAddress(addressingMode);
+            var (address, pageCross) = GetOperandAddress(addressingMode);
             var data = ReadMemory(address);
 
             var difference = registerData - data;
@@ -414,22 +438,29 @@ namespace NesEmulator.Core
             _ = difference >= 0 ? SetFlag(SRFlag.Carry) : ClearFlag(SRFlag.Carry);
 
             SetNZ((byte)difference);
+
+            if (pageCross)
+            {
+                Bus.Tick(1);
+            }
         }
 
         private void Branch(bool condition)
         {
             if (condition)
             {
-                var jump = ReadMemory(ProgramCounter);
-                //if (((jump >> 7) & 0x1) == 0)
-                if (jump <= 127)
+                Bus.Tick(1);
+
+                var jump = (sbyte) ReadMemory(ProgramCounter);
+
+                var jumpAddress = (ushort)(ProgramCounter + jump + 1);
+
+                if (((ProgramCounter + 1) & 0xFF00) != (jumpAddress & 0xFF00))
                 {
-                    ProgramCounter = (ushort)(ProgramCounter + 1 + jump);
-                } else
-                {
-                    // ToDo: Should 255 or 256?
-                    ProgramCounter = (ushort)(ProgramCounter - 255 + jump);
+                    Bus.Tick(1);
                 }
+
+                ProgramCounter = jumpAddress;
             }
         }
 
@@ -502,7 +533,7 @@ namespace NesEmulator.Core
 
             if (pageCross)
             {
-                // ToDo: Add bus tick
+                Bus.Tick(1);
             }
         }
 
@@ -515,7 +546,7 @@ namespace NesEmulator.Core
 
             if (pageCross)
             {
-                // ToDo: Add bus tick
+                Bus.Tick(1);
             }
         }
 

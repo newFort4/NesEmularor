@@ -7,10 +7,10 @@ namespace NesEmulator.Core
         public readonly byte Code;
         public readonly string Mnemonic;
         public readonly ushort Length;
-        public readonly int Cycles;
+        public readonly byte Cycles;
         public readonly AddressingMode AddressingMode;
 
-        private OpCode(byte code, string mnemonic, ushort length, int cycles, AddressingMode addressingMode)
+        private OpCode(byte code, string mnemonic, ushort length, byte cycles, AddressingMode addressingMode)
         {
             Code = code;
             Mnemonic = mnemonic;
