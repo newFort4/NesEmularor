@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AppKit;
@@ -17,6 +18,7 @@ namespace NesEmulator
         public MonoMacGameView Game { get; set; }
 
         private CPU cpu;
+        private Joypad joypad;
         #endregion
 
         #region Constructors
@@ -44,22 +46,64 @@ namespace NesEmulator
         #region Overrides
         public override void KeyDown(NSEvent theEvent)
         {
-            // handle key down events here
-            const ushort keyAddress = 0xFF;
-
             switch (theEvent.CharactersIgnoringModifiers)
             {
                 case "w":
-                    cpu.WriteMemory(keyAddress, 0x77);
+                    joypad.SetButtonPressedStatus(JoypadButton.Up, true);
                     break;
                 case "a":
-                    cpu.WriteMemory(keyAddress, 0x61);
+                    joypad.SetButtonPressedStatus(JoypadButton.Left, true);
                     break;
                 case "s":
-                    cpu.WriteMemory(keyAddress, 0x73);
+                    joypad.SetButtonPressedStatus(JoypadButton.Down, true);
                     break;
                 case "d":
-                    cpu.WriteMemory(keyAddress, 0x64);
+                    joypad.SetButtonPressedStatus(JoypadButton.Right, true);
+                    break;
+                case "v":
+                    joypad.SetButtonPressedStatus(JoypadButton.Start, true);
+                    break;
+                case "b":
+                    joypad.SetButtonPressedStatus(JoypadButton.Select, true);
+                    break;
+                case "j":
+                    joypad.SetButtonPressedStatus(JoypadButton.ButtonA, true);
+                    break;
+                case "k":
+                    joypad.SetButtonPressedStatus(JoypadButton.ButtonB, true);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public override void KeyUp(NSEvent theEvent)
+        {
+            switch (theEvent.CharactersIgnoringModifiers)
+            {
+                case "w":
+                    joypad.SetButtonPressedStatus(JoypadButton.Up, false);
+                    break;
+                case "a":
+                    joypad.SetButtonPressedStatus(JoypadButton.Left, false);
+                    break;
+                case "s":
+                    joypad.SetButtonPressedStatus(JoypadButton.Down, false);
+                    break;
+                case "d":
+                    joypad.SetButtonPressedStatus(JoypadButton.Right, false);
+                    break;
+                case "v":
+                    joypad.SetButtonPressedStatus(JoypadButton.Start, false);
+                    break;
+                case "b":
+                    joypad.SetButtonPressedStatus(JoypadButton.Select, false);
+                    break;
+                case "j":
+                    joypad.SetButtonPressedStatus(JoypadButton.ButtonA, false);
+                    break;
+                case "k":
+                    joypad.SetButtonPressedStatus(JoypadButton.ButtonB, false);
                     break;
                 default:
                     break;
@@ -82,14 +126,16 @@ namespace NesEmulator
 
             Game.Load += (sender, e) =>
             {
+                joypad = new();
+
                 // ToDo: Initialize settings, load textures and sounds here
-                cpu = new("Pac-Man.nes", (ppu, o) =>
+                cpu = new("nestest.nes", (ppu, o) =>
                 {
 
                     var frame = new Frame();
                     Renderer.Render(ppu, frame);
                     screenState = frame.Data;
-                });
+                }, joypad);
 
                 cpu.Reset();
 
@@ -166,6 +212,7 @@ namespace NesEmulator
                 //}
             };
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             void DrawPixel(int x, int y, Color color)
             {
                 GL.Begin(BeginMode.Polygon);
@@ -191,7 +238,7 @@ namespace NesEmulator
                 RenderGame();
             };
 
-            Game.Run(30);
+            Game.Run(60);
 
             var cpuTask = new Thread(() =>
             {

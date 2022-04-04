@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace NesEmulator.Core
 {
@@ -111,6 +112,7 @@ namespace NesEmulator.Core
 
         public void IncrementVRAMAddress() => Address.Increment(Control.VRAMAddIncrement());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadMemory()
         {
             var address = Address.Get();
@@ -145,7 +147,7 @@ namespace NesEmulator.Core
             }
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteData(byte data)
         {
             var address = Address.Get();
@@ -153,6 +155,7 @@ namespace NesEmulator.Core
             switch (address)
             {
                 case >= 0x0000 and <= 0x1FFF:
+                    break;
                     throw new InvalidOperationException($"Attempt to write to chr rom space { address }");
                 case >= 0x2000 and <= 0x2FFF:
                     VRAM[MirrorVRAMAddress(address)] = data;

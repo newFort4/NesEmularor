@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace NesEmulator.Core
 {
-    public class ROM
+    public record ROM
     {
         public byte[] PRGROM { get; set; }
         public byte[] CHRROM { get; set; }

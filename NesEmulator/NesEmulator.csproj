@@ -107,6 +107,8 @@
     </Content>
     <Content Include="Pac-Man.nes" />
     <Content Include="Mario.nes" />
+    <Content Include="scanline.nes" />
+    <Content Include="nestest.nes" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace NesEmulator.Core
 {
@@ -27,8 +28,8 @@ namespace NesEmulator.Core
 
         public readonly Bus Bus;
 
-        public CPU() : this("snake.nes", (p, c) => { }) { }
-        public CPU(string romFile, Action<PPU, object> ppuCallback) => Bus = new Bus(new ROM(File.ReadAllBytes(romFile)), ppuCallback);
+        public CPU() : this("snake.nes", (p, c) => { }, new()) { }
+        public CPU(string romFile, Action<PPU, object> ppuCallback, Joypad joypad) => Bus = new Bus(new ROM(File.ReadAllBytes(romFile)), ppuCallback, joypad);
         public CPU(ushort programOffset) : this() => ProgramOffset = programOffset;
 
         public void LoadAndRun(byte[] program)
@@ -250,7 +251,7 @@ namespace NesEmulator.Core
                         Compare(generalOpCode.AddressingMode, RegisterY);
                         break;
 
-                        // TODO: OPTIMALIZATION
+                    // TODO: OPTIMALIZATION
                     case 0X4C:
                     case 0X6C:
                         JMP(isAbsolute: generalOpCode.Code == 0x4C);
@@ -267,6 +268,7 @@ namespace NesEmulator.Core
                         // ToDo: Guy from the internet uses not used bit from Status Register;
                         Status = StackPop();
                         ClearFlag(SRFlag.Break);
+                        SetFlag(SRFlag.Break2);
                         ProgramCounter = StackPopUshort();
                         break;
 
@@ -414,6 +416,7 @@ namespace NesEmulator.Core
             ProgramCounter = ReadMemoryUshort(NMIVector);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void LDA(AddressingMode addressingMode)
         {
             var (address, pageCross) = GetOperandAddress(addressingMode);
@@ -456,6 +459,7 @@ namespace NesEmulator.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void STA(AddressingMode addressingMode) => StoreRegister(addressingMode, RegisterA);
         private void STX(AddressingMode addressingMode) => StoreRegister(addressingMode, RegisterX);
         private void STY(AddressingMode addressingMode) => StoreRegister(addressingMode, RegisterY);
@@ -532,16 +536,15 @@ namespace NesEmulator.Core
         }
 
         // A.k.A. This implements CMP, CPX, CPY.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Compare(AddressingMode addressingMode, byte registerData)
         {
             var (address, pageCross) = GetOperandAddress(addressingMode);
             var data = ReadMemory(address);
 
-            var difference = registerData - data;
+            _ = data <= registerData ? SetFlag(SRFlag.Carry) : ClearFlag(SRFlag.Carry);
 
-            _ = difference >= 0 ? SetFlag(SRFlag.Carry) : ClearFlag(SRFlag.Carry);
-
-            SetNZ((byte)difference);
+            SetNZ((byte)(registerData - data));
 
             if (pageCross)
             {
@@ -549,13 +552,14 @@ namespace NesEmulator.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Branch(bool condition)
         {
             if (condition)
             {
                 Bus.Tick(1);
 
-                var jump = (sbyte) ReadMemory(ProgramCounter);
+                var jump = (sbyte)ReadMemory(ProgramCounter);
 
                 var jumpAddress = (ushort)(ProgramCounter + jump + 1);
 
@@ -614,12 +618,17 @@ namespace NesEmulator.Core
         {
             var statusCopy = Status;
             SetFlag(SRFlag.Break);
-            ClearFlag(SRFlag.Break2);
+            SetFlag(SRFlag.Break2);
             StackPush(Status);
             Status = statusCopy;
         }
 
-        private void PLA() => RegisterA = StackPop();
+        private void PLA()
+        {
+            RegisterA = StackPop();
+
+            SetNZ(RegisterA);
+        }
 
         private void PLP()
         {
@@ -782,7 +791,7 @@ namespace NesEmulator.Core
             StackPointer++;
 
             var value = ReadMemory((ushort)(StackOffset + StackPointer));
-            SetNZ(value);
+            // SetNZ(value);
 
             return value;
         }
@@ -813,6 +822,7 @@ namespace NesEmulator.Core
             Status = 0b00100100;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (ushort, bool) GetAbsoluteAddress(AddressingMode addressingMode)
         {
             switch (addressingMode)
@@ -822,9 +832,9 @@ namespace NesEmulator.Core
                 case AddressingMode.Absolute:
                     return (ReadMemoryUshort(ProgramCounter), false);
                 case AddressingMode.ZeroPageX:
-                    return ((ushort)(ReadMemory(ProgramCounter) + RegisterX), false);
+                    return ((byte)(ReadMemory(ProgramCounter) + RegisterX), false);
                 case AddressingMode.ZeroPageY:
-                    return ((ushort)(ReadMemory(ProgramCounter) + RegisterY), false);
+                    return ((byte)(ReadMemory(ProgramCounter) + RegisterY), false);
                 case AddressingMode.AbsoluteX:
                     var @base = ReadMemoryUshort(ProgramCounter);
                     var address = (ushort)(@base + RegisterX);
@@ -861,6 +871,7 @@ namespace NesEmulator.Core
             return (address1 & 0xFF00) != (address2 & 0xFF00);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (ushort, bool) GetOperandAddress(AddressingMode addressingMode)
         {
             return addressingMode switch
@@ -870,19 +881,25 @@ namespace NesEmulator.Core
             };
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte SetFlag(SRFlag flag) => Status |= (byte)flag;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte ClearFlag(SRFlag flag) => Status = (byte)(Status & ~(byte)flag);
         private bool IsSet(SRFlag flag) => (Status & ((byte)flag)) != 0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetNZ(byte value)
         {
             _ = value == 0 ? SetFlag(SRFlag.Zero) : ClearFlag(SRFlag.Zero);
             _ = value > 127 ? SetFlag(SRFlag.Negative) : ClearFlag(SRFlag.Negative);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadMemory(ushort address) => Bus.ReadMemory(address);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteMemory(ushort address, byte data) => Bus.WriteMemory(address, data);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ushort ReadMemoryUshort(ushort position) => Bus.ReadMemoryUshort(position);
         private void WriteMemoryUshort(ushort position, ushort data) => Bus.WriteMemoryUshort(position, data);
     }

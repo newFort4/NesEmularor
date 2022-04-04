@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace NesEmulator.Core
@@ -10,6 +11,7 @@ namespace NesEmulator.Core
         public byte[] CPUVRAM { get; } = Enumerable.Repeat((byte)0, 2048).ToArray();
         public readonly ROM ROM;
         public readonly PPU PPU;
+        public readonly Joypad Joypad;
 
         private readonly Action<PPU, object> callback;
 
@@ -22,14 +24,16 @@ namespace NesEmulator.Core
         private const ushort PPURegisters = 0x2000;
         private const ushort PPURegistersMirrorsEnd = PPURegisters + MirrorsLength;
 
-        public Bus(ROM rom, Action<PPU, object> callback)
+        public Bus(ROM rom, Action<PPU, object> callback, Joypad joypad)
         {
             ROM = rom;
             PPU = new(rom.CHRROM, rom.Mirroring);
+            Joypad = joypad;
 
             this.callback = callback;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Tick(byte cycles)
         {
             Cycles += cycles;
@@ -45,6 +49,7 @@ namespace NesEmulator.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadMemory(ushort address)
         {
             switch (address)
@@ -71,6 +76,8 @@ namespace NesEmulator.Core
                     // ToDo: Implement PPU addresses
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
                     return ReadMemory(mirrorDownAddress);
+                case 0x4016:
+                    return Joypad.Read();
                 case >= 0x8000 and <= 0xFFFF:
                     return ReadPRGROM(address);
                 default:
@@ -78,6 +85,7 @@ namespace NesEmulator.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int? PollNMIStatus()
         {
             var result = PPU.NMIInterrupt;
@@ -87,6 +95,7 @@ namespace NesEmulator.Core
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteMemory(ushort address, byte data)
         {
             switch (address)
@@ -133,11 +142,15 @@ namespace NesEmulator.Core
 
                     PPU.WriteOAMDMA(buffer);
                     break;
+                case 0x4016:
+                    Joypad.Write(data);
+                    break;
                 case >= 0x8000 and <= 0xFFFF:
                     throw new InvalidOperationException("Attempt to write to Cartridge ROM space.");
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ReadMemoryUshort(ushort position)
         {
             var low = (ushort)ReadMemory(position);
@@ -146,6 +159,7 @@ namespace NesEmulator.Core
             return (ushort)((high << 8) | (low));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteMemoryUshort(ushort position, ushort data)
         {
             var high = (byte)(data >> 8);
@@ -155,6 +169,7 @@ namespace NesEmulator.Core
             WriteMemory((ushort)(position + 1), high);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte ReadPRGROM(ushort address)
         {
             address -= 0x8000;
