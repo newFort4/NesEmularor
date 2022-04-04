@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NesEmulator.Core
 {
@@ -10,6 +11,8 @@ namespace NesEmulator.Core
         public readonly ROM ROM;
         public readonly PPU PPU;
 
+        private readonly Action<PPU, object> callback;
+
         public int Cycles { get; private set; } = 0;
 
         private const ushort MirrorsLength = 0x1FFF;
@@ -19,16 +22,27 @@ namespace NesEmulator.Core
         private const ushort PPURegisters = 0x2000;
         private const ushort PPURegistersMirrorsEnd = PPURegisters + MirrorsLength;
 
-        public Bus(ROM rom)
+        public Bus(ROM rom, Action<PPU, object> callback)
         {
             ROM = rom;
             PPU = new(rom.CHRROM, rom.Mirroring);
+
+            this.callback = callback;
         }
 
         public void Tick(byte cycles)
         {
             Cycles += cycles;
-            PPU.Tick((byte)(3 * cycles));
+
+            var nmiBefore = PPU.NMIInterrupt.HasValue;
+            var a = PPU.Tick((byte)(3 * cycles));
+            var nmiAfter = PPU.NMIInterrupt.HasValue;
+
+            if (!nmiBefore && nmiAfter)
+            {
+                Task.Run(() => callback(PPU, null));
+                //callback(PPU, null); // ToDo: joypad
+            }
         }
 
         public byte ReadMemory(ushort address)
@@ -79,7 +93,6 @@ namespace NesEmulator.Core
             {
                 case >= RAM and <= RAMMirrorsEnd:
                     var mirrorDownAddress = (ushort)(address & 0b00000111_11111111);
-                    // ToDo: Guy from the internet casts it to usize
                     CPUVRAM[mirrorDownAddress] = data;
 
                     break;
@@ -109,6 +122,16 @@ namespace NesEmulator.Core
                 case >= 0x2008 and <= PPURegistersMirrorsEnd:
                     mirrorDownAddress = (ushort)(address & 0b00100000_00000111);
                     WriteMemory(mirrorDownAddress, data);
+                    break;
+                case 0x4014:
+                    var buffer = new byte[256];
+                    var high = data << 8;
+                    for (var i = 0; i < 256; i++)
+                    {
+                        buffer[i] = ReadMemory((ushort)(high + i));
+                    }
+
+                    PPU.WriteOAMDMA(buffer);
                     break;
                 case >= 0x8000 and <= 0xFFFF:
                     throw new InvalidOperationException("Attempt to write to Cartridge ROM space.");

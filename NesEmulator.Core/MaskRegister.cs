@@ -21,7 +21,7 @@ namespace NesEmulator.Core
 		Blue
     }
 
-    public class MaskRegister
+    public record MaskRegister
 	{
 		public byte Value { get; set; } = 0;
 

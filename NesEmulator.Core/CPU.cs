@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -29,8 +30,8 @@ namespace NesEmulator.Core
 
         public readonly Bus Bus;
 
-        public CPU() : this("snake.nes") { }
-        public CPU(string romFile) => Bus = new Bus(new ROM(File.ReadAllBytes(romFile)));
+        public CPU() : this("snake.nes", (p, c) => { }) { }
+        public CPU(string romFile, Action<PPU, object> ppuCallback) => Bus = new Bus(new ROM(File.ReadAllBytes(romFile)), ppuCallback);
         public CPU(ushort programOffset) : this() => ProgramOffset = programOffset;
 
         public void LoadAndRun(byte[] program)
@@ -69,7 +70,7 @@ namespace NesEmulator.Core
 
                 var opCode = ReadMemory(ProgramCounter);
 
-                var generalOpCode = OpCode.Codes.SingleOrDefault(x => x.Code == opCode);
+                var generalOpCode = OpCode.Codes.FirstOrDefault(x => x.Code == opCode);
 
                 action(this);
 
@@ -82,13 +83,13 @@ namespace NesEmulator.Core
                         return;
 
                     case var _ when OpCodes.NOP.Contains(opCode):
-                        var (address, pageCross) = GetOperandAddress(generalOpCode.AddressingMode);
-                        var data = ReadMemory(address);
+                        //var (address, pageCross) = GetOperandAddress(generalOpCode.AddressingMode);
+                        //var data = ReadMemory(address);
 
-                        if (pageCross)
-                        {
-                            Bus.Tick(1);
-                        }
+                        //if (pageCross)
+                        //{
+                        //    Bus.Tick(1);
+                        //}
                         break;
 
                     case var _ when OpCodes.LDA.Contains(opCode):
@@ -283,7 +284,7 @@ namespace NesEmulator.Core
                         ClearFlag(SRFlag.Interrupt);
                         break;
                     default:
-                        throw new InvalidOperationException();
+                        throw new InvalidOperationException("Unknown mnemonic.");
                 }
 
                 Bus.Tick(generalOpCode.Cycles);
@@ -307,7 +308,7 @@ namespace NesEmulator.Core
             Status = statusClone;
             SetFlag(SRFlag.Interrupt);
             Bus.Tick(2); // ToDo: Correct cycles
-            ProgramCounter = ReadMemory(NMIVector);
+            ProgramCounter = ReadMemoryUshort(NMIVector);
         }
 
         private void LDA(AddressingMode addressingMode)
@@ -735,7 +736,7 @@ namespace NesEmulator.Core
                     var low = ReadMemory(pointer);
                     var high = ReadMemory((byte)(pointer + 1));
 
-                    return ((ushort)((high) << 8 | (low)), false);
+                    return ((ushort)(((high) << 8) | (low)), false);
                 case AddressingMode.IndirectY:
                     position = ReadMemory(ProgramCounter);
                     low = ReadMemory(position);
@@ -759,13 +760,11 @@ namespace NesEmulator.Core
 
         private (ushort, bool) GetOperandAddress(AddressingMode addressingMode)
         {
-            switch (addressingMode)
+            return addressingMode switch
             {
-                case AddressingMode.Immediate:
-                    return (ProgramCounter, false);
-                default:
-                    return GetAbsoluteAddress(addressingMode);
-            }
+                AddressingMode.Immediate => (ProgramCounter, false),
+                _ => GetAbsoluteAddress(addressingMode),
+            };
         }
 
         private byte SetFlag(SRFlag flag) => Status |= (byte)flag;

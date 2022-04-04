@@ -2,7 +2,7 @@
 using NesEmulator.Core;
 using NesEmulator.Example;
 
-var cpu = new CPU("nestest.nes");
+var cpu = new CPU("nestest.nes", (a, b) => { });
 
 cpu.Reset();
 

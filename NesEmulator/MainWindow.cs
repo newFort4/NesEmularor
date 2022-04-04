@@ -83,7 +83,13 @@ namespace NesEmulator
             Game.Load += (sender, e) =>
             {
                 // ToDo: Initialize settings, load textures and sounds here
-                cpu = new("Alter_Ego.nes");
+                cpu = new("Pac-Man.nes", (ppu, o) =>
+                {
+
+                    var frame = new Frame();
+                    Renderer.Render(ppu, frame);
+                    screenState = frame.Data;
+                });
 
                 cpu.Reset();
 
@@ -92,8 +98,8 @@ namespace NesEmulator
                 //{
                 //    screenState = screenState.Concat(tile).ToArray();
                 //}
-                var tileFrame = Core.Frame.ShowTileBank(cpu.Bus.ROM.CHRROM, 0);
-                screenState = tileFrame.Data;
+                //var tileFrame = Core.Frame.ShowTileBank(cpu.Bus.ROM.CHRROM, 0);
+                //screenState = tileFrame.Data;
             };
 
             Game.Resize += (sender, e) =>
@@ -104,33 +110,18 @@ namespace NesEmulator
             #region Initializating of static logic
             Color GetColor(byte data)
             {
-                switch (data)
+                return data switch
                 {
-                    case 0:
-                        return Color.Black;
-                    case 1:
-                        return Color.White;
-                    case 2:
-                    case 9:
-                        return Color.DarkGray;
-                    case 3:
-                    case 10:
-                        return Color.Red;
-                    case 4:
-                    case 11:
-                        return Color.Green;
-                    case 5:
-                    case 12:
-                        return Color.Blue;
-                    case 6:
-                    case 13:
-                        return Color.Magenta;
-                    case 7:
-                    case 14:
-                        return Color.Yellow;
-                    default:
-                        return Color.Cyan;
-                }
+                    0 => Color.Black,
+                    1 => Color.White,
+                    2 or 9 => Color.DarkGray,
+                    3 or 10 => Color.Red,
+                    4 or 11 => Color.Green,
+                    5 or 12 => Color.Blue,
+                    6 or 13 => Color.Magenta,
+                    7 or 14 => Color.Yellow,
+                    _ => Color.Cyan,
+                };
             }
 
             void RenderGame()
@@ -202,9 +193,20 @@ namespace NesEmulator
 
             Game.Run(30);
 
-            var cpuTask = new Task(() =>
+            var cpuTask = new Thread(() =>
             {
-            });
+                try
+                {
+                    cpu.Run();
+                }
+                catch (Exception e)
+                {
+
+                }
+            })
+            {
+                Priority = ThreadPriority.Highest
+            };
 
             cpuTask.Start();
         }

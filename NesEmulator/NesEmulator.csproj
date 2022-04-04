@@ -105,6 +105,8 @@
     <Content Include="Alter_Ego.nes">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Pac-Man.nes" />
+    <Content Include="Mario.nes" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

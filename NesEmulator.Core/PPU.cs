@@ -25,7 +25,7 @@ namespace NesEmulator.Core
 
         public Mirroring Mirroring { get; set; }
 
-        private byte internalDataBuffer;
+        private byte internalDataBuffer = 0;
 
         public PPU(byte[] chrROM, Mirroring mirroring)
         {
@@ -47,15 +47,20 @@ namespace NesEmulator.Core
 
                 if (Scanline == 241)
                 {
-                    if (Control.GeneraeVBlankNMI()) {
-                        Status.SetVBlankStatus(true);
-                        // ToDo: Should trigger NMI interrupt
+                    Status.SetVBlankStatus(true);
+                    Status.SetSpriteZeroHit(false);
+
+                    if (Control.GeneraeVBlankNMI())
+                    {
+                        NMIInterrupt = 1;
                     }
                 }
 
                 if (Scanline >= 262)
                 {
                     Scanline = 0;
+                    NMIInterrupt = null;
+                    Status.SetSpriteZeroHit(false);
                     Status.ResetVBlankStatus();
                     return true;
                 }
@@ -104,7 +109,7 @@ namespace NesEmulator.Core
             }
         }
 
-        public void IncrementVRAMAddress() => Control.VRAMAddIncrement();
+        public void IncrementVRAMAddress() => Address.Increment(Control.VRAMAddIncrement());
 
         public byte ReadMemory()
         {
@@ -171,7 +176,7 @@ namespace NesEmulator.Core
             IncrementVRAMAddress();
         }
 
-    public ushort MirrorVRAMAddress(ushort address)
+        public ushort MirrorVRAMAddress(ushort address)
         {
             var mirroredVRAM = address & 0b10111111111111;
             var vramIndex = mirroredVRAM - 0x2000;
@@ -192,7 +197,7 @@ namespace NesEmulator.Core
         }
     }
 
-    public class AddressRegister
+    public record AddressRegister
     {
         public (byte, byte) Value { get; set; }
         public bool HighPointer { get; set; }
@@ -226,6 +231,23 @@ namespace NesEmulator.Core
         public void ResetLatch() => HighPointer = true;
 
         public ushort Get() => (ushort)((Value.Item1 << 8) | Value.Item2);
+
+        internal void Increment(byte increment)
+        {
+            var low = Value.Item2;
+
+            Value = (Value.Item1, (byte)(Value.Item2 + increment));
+
+            if (low > Value.Item2)
+            {
+                Value = ((byte)(Value.Item1 + 1), Value.Item2);
+            }
+
+            if (Get() > 0x3FFF)
+            {
+                Set((ushort)(Get() & 0b11111111111111));
+            }
+        }
     }
 }
 

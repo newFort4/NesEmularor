@@ -17,40 +17,11 @@
 	{
         public byte Value { get; set; } = 0;
 
-        public void SetVBlankStatus(bool status)
-        {
-            if (status)
-            {
-                Value = (byte)(Value | ((byte)StatusRegisterEnum.VBlankStarted));
-            } else
-            {
-                Value = (byte)(Value & ~(byte)StatusRegisterEnum.VBlankStarted);
-            }
-        }
+        public void SetVBlankStatus(bool status) => Value = status ? (byte)(Value | ((byte)StatusRegisterEnum.VBlankStarted)) : (byte)(Value & ~(byte)StatusRegisterEnum.VBlankStarted);
 
-        public void SetSpriteZeroHit(bool status)
-        {
-            if (status)
-            {
-                Value = (byte)(Value | ((byte)StatusRegisterEnum.SpriteZeroHit));
-            }
-            else
-            {
-                Value = (byte)(Value & ~(byte)StatusRegisterEnum.SpriteZeroHit);
-            }
-        }
+        public void SetSpriteZeroHit(bool status) => Value = status ? (byte)(Value | ((byte)StatusRegisterEnum.SpriteZeroHit)) : (byte)(Value & ~(byte)StatusRegisterEnum.SpriteZeroHit);
 
-        public void SetSpriteOverflow(bool status)
-        {
-            if (status)
-            {
-                Value = (byte)(Value | ((byte)StatusRegisterEnum.SpriteOverflow));
-            }
-            else
-            {
-                Value = (byte)(Value & ~(byte)StatusRegisterEnum.SpriteOverflow);
-            }
-        }
+        public void SetSpriteOverflow(bool status) => Value = status ? (byte)(Value | ((byte)StatusRegisterEnum.SpriteOverflow)) : (byte)(Value & ~(byte)StatusRegisterEnum.SpriteOverflow);
 
         public void ResetVBlankStatus() => SetVBlankStatus(false);
         public bool IsInVBlank() => (Value & ((byte)StatusRegisterEnum.VBlankStarted)) != 0;

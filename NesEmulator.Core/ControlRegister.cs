@@ -23,5 +23,9 @@ namespace NesEmulator.Core
         public void Update(byte data) => Bits = data;
 
         internal bool GeneraeVBlankNMI() => (Bits & ((byte)ControlRegisterEnum.GenerateNMI)) != 0;
+
+        internal int BackgroundPatternAddress() => (Bits & ((byte)ControlRegisterEnum.BackgroundPatternAddress)) != 0 ? 0x1000 : 0;
+
+        internal int SpritePatternAddress() => (Bits & ((byte)ControlRegisterEnum.SpritePatternAddress)) != 0 ? 0x1000 : 0;
     }
 }

@@ -2,11 +2,10 @@
 
 using AppKit;
 using Foundation;
-using OpenTK.Platform.MacOS;
 
 namespace NesEmulator
 {
-	public partial class ViewController : NSViewController
+    public partial class ViewController : NSViewController
 	{
 		public ViewController (IntPtr handle) : base (handle)
 		{
