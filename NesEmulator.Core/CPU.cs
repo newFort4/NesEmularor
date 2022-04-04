@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace NesEmulator.Core
 {
@@ -70,7 +67,17 @@ namespace NesEmulator.Core
 
                 var opCode = ReadMemory(ProgramCounter);
 
-                var generalOpCode = OpCode.Codes.FirstOrDefault(x => x.Code == opCode);
+                OpCode generalOpCode = null;
+
+                for (int i = 0; i < OpCode.Codes.Length; i++)
+                {
+                    if (OpCode.Codes[i].Code == opCode)
+                    {
+                        generalOpCode = OpCode.Codes[i];
+                        break;
+                    }
+                }
+                //var generalOpCode = OpCode.Codes.FirstOrDefault(x => x.Code == opCode);
 
                 action(this);
 
@@ -79,10 +86,10 @@ namespace NesEmulator.Core
 
                 switch (opCode)
                 {
-                    case var _ when OpCodes.BRK.Contains(opCode):
+                    case 0x00:
                         return;
 
-                    case var _ when OpCodes.NOP.Contains(opCode):
+                    case 0xEA:
                         //var (address, pageCross) = GetOperandAddress(generalOpCode.AddressingMode);
                         //var data = ReadMemory(address);
 
@@ -92,195 +99,291 @@ namespace NesEmulator.Core
                         //}
                         break;
 
-                    case var _ when OpCodes.LDA.Contains(opCode):
+                    case 0XA9:
+                    case 0XA5:
+                    case 0XB5:
+                    case 0XAD:
+                    case 0XBD:
+                    case 0XB9:
+                    case 0XA1:
+                    case 0XB1:
                         LDA(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.LDX.Contains(opCode):
+                    case 0XA2:
+                    case 0XA6:
+                    case 0XB6:
+                    case 0XAE:
+                    case 0XBE:
                         LDX(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.LDY.Contains(opCode):
+                    case 0XA0:
+                    case 0XA4:
+                    case 0XB4:
+                    case 0XAC:
+                    case 0XBC:
                         LDY(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.TAX.Contains(opCode):
+                    case 0XAA:
                         RegisterX = RegisterA;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.TAY.Contains(opCode):
+                    case 0XA8:
                         RegisterY = RegisterA;
                         SetNZ(RegisterY);
                         break;
-                    case var _ when OpCodes.TSX.Contains(opCode):
+                    case 0XBA:
                         RegisterX = StackPointer;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.TXA.Contains(opCode):
+                    case 0X8A:
                         RegisterA = RegisterX;
                         SetNZ(RegisterA);
                         break;
-                    case var _ when OpCodes.TYA.Contains(opCode):
+                    case 0X98:
                         RegisterA = RegisterY;
                         SetNZ(RegisterA);
                         break;
-                    case var _ when OpCodes.TXS.Contains(opCode):
+                    case 0X9A:
                         StackPointer = RegisterX;
                         break;
 
-                    case var _ when OpCodes.STA.Contains(opCode):
+                    case 0X85:
+                    case 0X95:
+                    case 0X8D:
+                    case 0X9D:
+                    case 0X99:
+                    case 0X81:
+                    case 0X91:
                         STA(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.STX.Contains(opCode):
+                    case 0X86:
+                    case 0X96:
+                    case 0X8E:
                         STX(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.STY.Contains(opCode):
+                    case 0X84:
+                    case 0X94:
+                    case 0X8C:
                         STY(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.AND.Contains(opCode):
+                    case 0X29:
+                    case 0X25:
+                    case 0X35:
+                    case 0X2D:
+                    case 0X3D:
+                    case 0X39:
+                    case 0X21:
+                    case 0X31:
                         AND(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.EOR.Contains(opCode):
+                    case 0X49:
+                    case 0X45:
+                    case 0X55:
+                    case 0X4D:
+                    case 0X5D:
+                    case 0X59:
+                    case 0X41:
+                    case 0X51:
                         EOR(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.ORA.Contains(opCode):
+                    case 0X09:
+                    case 0X05:
+                    case 0X15:
+                    case 0X0D:
+                    case 0X1D:
+                    case 0X19:
+                    case 0X01:
+                    case 0X11:
                         ORA(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.INC.Contains(opCode):
+                    case 0XE6:
+                    case 0XF6:
+                    case 0XEE:
+                    case 0XFE:
                         INC(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.INX.Contains(opCode):
+                    case 0XE8:
                         RegisterX++;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.INY.Contains(opCode):
+                    case 0XC8:
                         RegisterY++;
                         SetNZ(RegisterY);
                         break;
 
-                    case var _ when OpCodes.DEC.Contains(opCode):
+                    case 0XC6:
+                    case 0XD6:
+                    case 0XCE:
+                    case 0XDE:
                         DEC(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.DEX.Contains(opCode):
+                    case 0XCA:
                         RegisterX--;
                         SetNZ(RegisterX);
                         break;
-                    case var _ when OpCodes.DEY.Contains(opCode):
+                    case 0X88:
                         RegisterY--;
                         SetNZ(RegisterY);
                         break;
 
-                    case var _ when OpCodes.CMP.Contains(opCode):
+                    case 0XC9:
+                    case 0XC5:
+                    case 0XD5:
+                    case 0XCD:
+                    case 0XDD:
+                    case 0XD9:
+                    case 0XC1:
+                    case 0XD1:
                         Compare(generalOpCode.AddressingMode, RegisterA);
                         break;
-                    case var _ when OpCodes.CPX.Contains(opCode):
+                    case 0XE0:
+                    case 0XE4:
+                    case 0XEC:
                         Compare(generalOpCode.AddressingMode, RegisterX);
                         break;
-                    case var _ when OpCodes.CPY.Contains(opCode):
+                    case 0XC0:
+                    case 0XC4:
+                    case 0XCC:
                         Compare(generalOpCode.AddressingMode, RegisterY);
                         break;
 
-                    case var _ when OpCodes.JMP.Contains(opCode):
+                        // TODO: OPTIMALIZATION
+                    case 0X4C:
+                    case 0X6C:
                         JMP(isAbsolute: generalOpCode.Code == 0x4C);
                         break;
-                    case var _ when OpCodes.JSR.Contains(opCode):
+                    case 0X20:
                         StackPushUshort((ushort)(ProgramCounter + 1));
                         ProgramCounter = ReadMemoryUshort(ProgramCounter);
                         break;
 
-                    case var _ when OpCodes.RTS.Contains(opCode):
+                    case 0X60:
                         ProgramCounter = (ushort)(StackPopUshort() + 1);
                         break;
-                    case var _ when OpCodes.RTI.Contains(opCode):
+                    case 0X40:
                         // ToDo: Guy from the internet uses not used bit from Status Register;
                         Status = StackPop();
                         ClearFlag(SRFlag.Break);
                         ProgramCounter = StackPopUshort();
                         break;
 
-                    case var _ when OpCodes.BNE.Contains(opCode):
+                    case 0XD0:
                         Branch(!IsSet(SRFlag.Zero));
                         break;
-                    case var _ when OpCodes.BVS.Contains(opCode):
+                    case 0X70:
                         Branch(IsSet(SRFlag.VOverflow));
                         break;
-                    case var _ when OpCodes.BVC.Contains(opCode):
+                    case 0X50:
                         Branch(!IsSet(SRFlag.VOverflow));
                         break;
-                    case var _ when OpCodes.BPL.Contains(opCode):
+                    case 0X10:
                         Branch(!IsSet(SRFlag.Negative));
                         break;
-                    case var _ when OpCodes.BMI.Contains(opCode):
+                    case 0X30:
                         Branch(IsSet(SRFlag.Negative));
                         break;
-                    case var _ when OpCodes.BEQ.Contains(opCode):
+                    case 0XF0:
                         Branch(IsSet(SRFlag.Zero));
                         break;
-                    case var _ when OpCodes.BCS.Contains(opCode):
+                    case 0XB0:
                         Branch(IsSet(SRFlag.Carry));
                         break;
-                    case var _ when OpCodes.BCC.Contains(opCode):
+                    case 0X90:
                         Branch(!IsSet(SRFlag.Carry));
                         break;
 
-                    case var _ when OpCodes.BIT.Contains(opCode):
+                    case 0X24:
+                    case 0X2C:
                         BIT(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.PHA.Contains(opCode):
+                    case 0X48:
                         PHA();
                         break;
-                    case var _ when OpCodes.PHP.Contains(opCode):
+                    case 0X08:
                         PHP();
                         break;
-                    case var _ when OpCodes.PLA.Contains(opCode):
+                    case 0X68:
                         PLA();
                         break;
-                    case var _ when OpCodes.PLP.Contains(opCode):
+                    case 0X28:
                         PLP();
                         break;
 
-                    case var _ when OpCodes.ADC.Contains(opCode):
+                    case 0x69:
+                    case 0x65:
+                    case 0x75:
+                    case 0x6D:
+                    case 0x7D:
+                    case 0x79:
+                    case 0x61:
+                    case 0x71:
                         ADC(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.SBC.Contains(opCode):
+                    case 0XE9:
+                    case 0XE5:
+                    case 0XF5:
+                    case 0XED:
+                    case 0XFD:
+                    case 0XF9:
+                    case 0XE1:
+                    case 0XF1:
                         SBC(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.LSR.Contains(opCode):
+                    case 0X4A:
+                    case 0X46:
+                    case 0X56:
+                    case 0X4E:
+                    case 0X5E:
                         LSR(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.ASL.Contains(opCode):
+                    case 0X0A:
+                    case 0X06:
+                    case 0X16:
+                    case 0X0E:
+                    case 0X1E:
                         ASL(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.ROL.Contains(opCode):
+                    case 0X2A:
+                    case 0X26:
+                    case 0X36:
+                    case 0X2E:
+                    case 0X3E:
                         ROL(generalOpCode.AddressingMode);
                         break;
-                    case var _ when OpCodes.ROR.Contains(opCode):
+                    case 0X6A:
+                    case 0X66:
+                    case 0X76:
+                    case 0X6E:
+                    case 0X7E:
                         ROR(generalOpCode.AddressingMode);
                         break;
 
-                    case var _ when OpCodes.SED.Contains(opCode):
+                    case 0XF8:
                         SetFlag(SRFlag.Decimal);
                         break;
-                    case var _ when OpCodes.SEC.Contains(opCode):
+                    case 0X38:
                         SetFlag(SRFlag.Carry);
                         break;
-                    case var _ when OpCodes.SEI.Contains(opCode):
+                    case 0X78:
                         SetFlag(SRFlag.Interrupt);
                         break;
 
-                    case var _ when OpCodes.CLD.Contains(opCode):
+                    case 0XD8:
                         ClearFlag(SRFlag.Decimal);
                         break;
-                    case var _ when OpCodes.CLV.Contains(opCode):
+                    case 0XB8:
                         ClearFlag(SRFlag.VOverflow);
                         break;
-                    case var _ when OpCodes.CLC.Contains(opCode):
+                    case 0X18:
                         ClearFlag(SRFlag.Carry);
                         break;
-                    case var _ when OpCodes.CLI.Contains(opCode):
+                    case 0X58:
                         ClearFlag(SRFlag.Interrupt);
                         break;
                     default:

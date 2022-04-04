@@ -205,6 +205,7 @@ namespace NesEmulator
                 }
             })
             {
+                Name = "NESCPUExecution",
                 Priority = ThreadPriority.Highest
             };
 
