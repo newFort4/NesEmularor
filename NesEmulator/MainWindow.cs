@@ -12,6 +12,7 @@ using OpenTK.Platform.MacOS;
 
 namespace NesEmulator
 {
+    // ToDo: Use NSGraphicsContext.CurrentContext.CGContext
     public partial class MainWindow : NSWindow
 	{
         #region Computed Properties
@@ -38,7 +39,7 @@ namespace NesEmulator
 
 		// Shared initialization code
 		void Initialize ()
-		{
+        {
 		}
 
         #endregion
@@ -127,25 +128,16 @@ namespace NesEmulator
             Game.Load += (sender, e) =>
             {
                 joypad = new();
+                var frame = new Frame();
 
                 // ToDo: Initialize settings, load textures and sounds here
                 cpu = new("nestest.nes", (ppu, o) =>
                 {
-
-                    var frame = new Frame();
                     Renderer.Render(ppu, frame);
                     screenState = frame.Data;
                 }, joypad);
 
                 cpu.Reset();
-
-                //screenState = Array.Empty<byte>();
-                //foreach (var tile in Enumerable.Repeat(0, 1).Select(x => Core.Frame.ShowFrame(cpu.Bus.ROM.CHRROM, 1, x).Data))
-                //{
-                //    screenState = screenState.Concat(tile).ToArray();
-                //}
-                //var tileFrame = Core.Frame.ShowTileBank(cpu.Bus.ROM.CHRROM, 0);
-                //screenState = tileFrame.Data;
             };
 
             Game.Resize += (sender, e) =>
@@ -154,22 +146,6 @@ namespace NesEmulator
             };
 
             #region Initializating of static logic
-            Color GetColor(byte data)
-            {
-                return data switch
-                {
-                    0 => Color.Black,
-                    1 => Color.White,
-                    2 or 9 => Color.DarkGray,
-                    3 or 10 => Color.Red,
-                    4 or 11 => Color.Green,
-                    5 or 12 => Color.Blue,
-                    6 or 13 => Color.Magenta,
-                    7 or 14 => Color.Yellow,
-                    _ => Color.Cyan,
-                };
-            }
-
             void RenderGame()
             {
                 var pointer = (0, 240);
@@ -188,29 +164,7 @@ namespace NesEmulator
             }
             #endregion
 
-            Game.UpdateFrame += (sender, e) =>
-            {
-                // ToDo: Add any game logic or physics
-                //var frameIdx = 0;
-
-                //var frame = screenState;
-
-                //for (var i = (ushort)0x0200; i < 0x0600; i++)
-                //{
-                //    var colorIdx = cpu.ReadMemory(i);
-                //    var color = GetColor(colorIdx);
-                //    var (r, g, b) = (color.R, color.G, color.B);
-
-                //    if (frame[frameIdx] != r || frame[frameIdx + 1] != g || frame[frameIdx + 2] != b)
-                //    {
-                //        frame[frameIdx] = r;
-                //        frame[frameIdx + 1] = g;
-                //        frame[frameIdx + 2] = b;
-                //    }
-
-                //    frameIdx += 3;
-                //}
-            };
+            Game.UpdateFrame += (sender, e) => { };
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             void DrawPixel(int x, int y, Color color)
@@ -238,9 +192,9 @@ namespace NesEmulator
                 RenderGame();
             };
 
-            Game.Run(60);
+            Game.Run(256 * 3);
 
-            var cpuTask = new Thread(() =>
+            var cpuTask = new Task(() =>
             {
                 try
                 {
@@ -250,11 +204,7 @@ namespace NesEmulator
                 {
 
                 }
-            })
-            {
-                Name = "NESCPUExecution",
-                Priority = ThreadPriority.Highest
-            };
+            });
 
             cpuTask.Start();
         }

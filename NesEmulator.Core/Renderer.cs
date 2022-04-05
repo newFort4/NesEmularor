@@ -30,6 +30,8 @@ namespace NesEmulator.Core
         {
             var bank = ppu.Control.BackgroundPatternAddress();
 
+            var span = ppu.ChrROM.AsSpan();
+
             for (var i = 0; i < 0x03C0; i++)
             {
                 var tileIndex = ppu.VRAM[i];
@@ -37,7 +39,7 @@ namespace NesEmulator.Core
                 var tileX = i % 32;
                 var tileY = i / 32;
 
-                var tile = ppu.ChrROM[(bank + tileIndex * 16)..(bank + tileIndex * 16 + 16)];
+                var tile = /*span.Slice(bank + tileIndex * 16, 16); //*/ppu.ChrROM[(bank + tileIndex * 16)..(bank + tileIndex * 16 + 16)];
                 var pallete = GetBackgroundPallete(ppu, tileX, tileY);
 
                 for (var y = 0; y < 8; y++)
@@ -63,6 +65,7 @@ namespace NesEmulator.Core
                     }
                 }
             }
+
             for (var i = ppu.OAMData.Length - 4; i >= 0; i -= 4)
             {
                 var tileIdx = ppu.OAMData[i + 1];
@@ -77,7 +80,7 @@ namespace NesEmulator.Core
                 var spritePallete = GetSpritePallete(ppu, palleteIdx);
                 bank = ppu.Control.SpritePatternAddress();
 
-                var tile = ppu.ChrROM[(bank + tileIdx * 16)..(bank + tileIdx * 16 + 16)];
+                var tile = span.Slice(bank + tileIdx * 16, 16); ;
 
                 for (var y = 0; y < 8; y++)
                 {

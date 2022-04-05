@@ -1,24 +1,19 @@
 ﻿using System;
-using System.Linq;
 
 namespace NesEmulator.Core
 {
-    public class Frame
+    public record Frame
 	{
-        public byte[] Data { get; set; }
+        public byte[] Data = new byte[Width * Height * 3];
 
         private const int Width = 256;
         private const int Height = 240;
-
-        public Frame() => Data = Enumerable
-            .Repeat((byte)0, Width * Height * 3)
-            .ToArray();
 
         public void SetPixel(int x, int y, (byte, byte, byte) rgb)
         {
             var @base = y * 3 * Width + x * 3;
 
-            if (@base + 2 < Data.Length)
+            if (@base + 2 < Width * Height * 3)
             {
                 Data[@base] = rgb.Item1;
                 Data[@base + 1] = rgb.Item2;

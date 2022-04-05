@@ -233,6 +233,7 @@ namespace NesEmulator.Core
 
         public void ResetLatch() => HighPointer = true;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort Get() => (ushort)((Value.Item1 << 8) | Value.Item2);
 
         internal void Increment(byte increment)

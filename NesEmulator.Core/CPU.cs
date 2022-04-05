@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -25,6 +26,8 @@ namespace NesEmulator.Core
         public readonly ushort? ProgramOffset = null;
 
         private const ushort StackOffset = 0x0100;
+
+        private readonly Dictionary<byte, OpCode> opCodes = OpCode.Codes.ToDictionary(x => x.Code, x => x);
 
         public readonly Bus Bus;
 
@@ -68,17 +71,7 @@ namespace NesEmulator.Core
 
                 var opCode = ReadMemory(ProgramCounter);
 
-                OpCode generalOpCode = null;
-
-                for (int i = 0; i < OpCode.Codes.Length; i++)
-                {
-                    if (OpCode.Codes[i].Code == opCode)
-                    {
-                        generalOpCode = OpCode.Codes[i];
-                        break;
-                    }
-                }
-                //var generalOpCode = OpCode.Codes.FirstOrDefault(x => x.Code == opCode);
+                var generalOpCode = opCodes[opCode];
 
                 action(this);
 

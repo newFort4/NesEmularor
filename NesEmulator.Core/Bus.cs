@@ -19,6 +19,9 @@ namespace NesEmulator.Core
 
         private const ushort MirrorsLength = 0x1FFF;
 
+
+        private readonly byte[] buffer = new byte[256];
+
         private const ushort RAM = 0x0000;
         private const ushort RAMMirrorsEnd = RAM + MirrorsLength;
         private const ushort PPURegisters = 0x2000;
@@ -38,14 +41,14 @@ namespace NesEmulator.Core
         {
             Cycles += cycles;
 
-            var nmiBefore = PPU.NMIInterrupt.HasValue;
+            // var nmiBefore = PPU.NMIInterrupt.HasValue;
             var a = PPU.Tick((byte)(3 * cycles));
-            var nmiAfter = PPU.NMIInterrupt.HasValue;
+            // var nmiAfter = PPU.NMIInterrupt.HasValue;
 
-            if (!nmiBefore && nmiAfter)
+            if (a)
             {
-                Task.Run(() => callback(PPU, null));
-                //callback(PPU, null); // ToDo: joypad
+                //Task.Run(() => callback(PPU, null));
+                callback(PPU, null); // ToDo: joypad
             }
         }
 
@@ -133,7 +136,6 @@ namespace NesEmulator.Core
                     WriteMemory(mirrorDownAddress, data);
                     break;
                 case 0x4014:
-                    var buffer = new byte[256];
                     var high = data << 8;
                     for (var i = 0; i < 256; i++)
                     {
