@@ -131,7 +131,7 @@ namespace NesEmulator
                 var frame = new Frame();
 
                 // ToDo: Initialize settings, load textures and sounds here
-                cpu = new("nestest.nes", (ppu, o) =>
+                cpu = new("Mario.nes", (ppu, o) =>
                 {
                     Renderer.Render(ppu, frame);
                     screenState = frame.Data;
@@ -152,7 +152,7 @@ namespace NesEmulator
 
                 for (var i = 0; i < screenState.Length; i += 3)
                 {
-                    var color = Color.FromArgb(screenState[i], screenState[i + 1], screenState[i + 2]);
+                    var color = Color.FromArgb(128, screenState[i], screenState[i + 1], screenState[i + 2]);
                     DrawPixel(pointer.Item1, pointer.Item2, color);
                     pointer = (pointer.Item1 + 1, pointer.Item2);
 
@@ -192,13 +192,13 @@ namespace NesEmulator
                 RenderGame();
             };
 
-            Game.Run(256 * 3);
+            Game.Run(15);
 
             var cpuTask = new Task(() =>
             {
                 try
                 {
-                    cpu.Run();
+                    cpu.RunWithCallback((c) => { });
                 }
                 catch (Exception e)
                 {

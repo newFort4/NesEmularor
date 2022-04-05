@@ -14,7 +14,7 @@ namespace NesEmulator.Core
 
         public byte OAMAddress = 0;
 
-        public int Cycles = 0;
+        public ulong Cycles = 0;
         public ushort Scanline = 0;
         public int? NMIInterrupt = null;
 
@@ -24,7 +24,7 @@ namespace NesEmulator.Core
         public StatusRegister Status { get; set; } = new();
         public ScrollRegister Scroll { get; set; } = new();
 
-        public Mirroring Mirroring { get; set; }
+        public readonly Mirroring Mirroring;
 
         private byte internalDataBuffer = 0;
 
@@ -43,6 +43,10 @@ namespace NesEmulator.Core
             Cycles += cycles;
             if (Cycles >= 341)
             {
+                if (IsSpriteZeroHit(Cycles))
+                {
+                    Status.SetSpriteZeroHit(true);
+                }
                 Cycles -= 341;
                 Scanline++;
 
@@ -67,6 +71,14 @@ namespace NesEmulator.Core
                 }
             }
             return false;
+        }
+
+        private bool IsSpriteZeroHit(ulong cycles)
+        {
+            var y = OAMData[0];
+            var x = OAMData[3];
+
+            return (y == Scanline) && x <= cycles && Mask.ShoukdShowSprites();
         }
 
         public byte ReadStatus()

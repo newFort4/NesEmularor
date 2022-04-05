@@ -7,10 +7,10 @@ namespace NesEmulator.Core
     public static class Renderer
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static byte[] GetBackgroundPallete(PPU ppu, int tileColumn, int tileRow)
+        private static byte[] GetBackgroundPallete(PPU ppu, Span<byte> attributeTable, int tileColumn, int tileRow)
         {
             var attributeTableIdx = tileRow / 4 * 8 + tileColumn / 4;
-            var attributeByte = ppu.VRAM[0x3c0 + attributeTableIdx];
+            var attributeByte = attributeTable[attributeTableIdx];
             var palleteIdx = (tileColumn % 4 / 2, tileRow % 4 / 2)
             switch
             {
@@ -25,12 +25,13 @@ namespace NesEmulator.Core
             return new[] { ppu.PalletTable[0], ppu.PalletTable[palleteStart], ppu.PalletTable[palleteStart + 1], ppu.PalletTable[palleteStart + 2] };
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Render(PPU ppu, Frame frame)
+        public static void RenderNameTable(PPU ppu, Frame frame, Span<byte> nameTable, Rect viewPort, int shiftX, int shiftY)
         {
             var bank = ppu.Control.BackgroundPatternAddress();
 
             var span = ppu.ChrROM.AsSpan();
+
+            var attributeTable = nameTable[0x3C0..0x400];
 
             for (var i = 0; i < 0x03C0; i++)
             {
@@ -39,8 +40,8 @@ namespace NesEmulator.Core
                 var tileX = i % 32;
                 var tileY = i / 32;
 
-                var tile = /*span.Slice(bank + tileIndex * 16, 16); //*/ppu.ChrROM[(bank + tileIndex * 16)..(bank + tileIndex * 16 + 16)];
-                var pallete = GetBackgroundPallete(ppu, tileX, tileY);
+                var tile = span.Slice(bank + tileIndex * 16, 16); //ppu.ChrROM[(bank + tileIndex * 16)..(bank + tileIndex * 16 + 16)];
+                var pallete = GetBackgroundPallete(ppu, attributeTable, tileX, tileY);
 
                 for (var y = 0; y < 8; y++)
                 {
@@ -61,9 +62,44 @@ namespace NesEmulator.Core
                             3 => Pallete.SystemPallete[pallete[3]],
                             _ => throw new InvalidProgramException(),
                         };
-                        frame.SetPixel(tileX * 8 + x, tileY * 8 + y, rgb);
+
+                        var pixelX = tileX * 8 + x;
+                        var pixelY = tileY * 8 + y;
+
+                        if (pixelX >= viewPort.X1 && pixelX < viewPort.X2 && pixelY >= viewPort.Y1 && pixelY < viewPort.Y2)
+                        {
+                            frame.SetPixel(shiftX + pixelX, shiftY + pixelY, rgb);
+                        }
                     }
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Render(PPU ppu, Frame frame)
+        {
+            var scrollX = ppu.Scroll.ScrollX;
+            var scrollY = ppu.Scroll.ScrollY;
+
+            var span = ppu.VRAM.AsSpan();
+
+            const int tableLength = 0x400;
+
+            var (mainNameTableOffset, secondNameTableOffset) = (ppu.Mirroring, ppu.Control.GetNametableAddress()) switch
+            {
+                (Mirroring.Vertical, 0x2000) or (Mirroring.Vertical, 0x2800) or (Mirroring.Horizontal, 0x2000) or (Mirroring.Horizontal, 0x2400) => (0, 0x400),
+                (Mirroring.Vertical, 0x2400) or (Mirroring.Vertical, 0x2C00) or (Mirroring.Horizontal, 0x2800) or (Mirroring.Horizontal, 0x2c00) => (0x400, 0),
+                _ => throw new InvalidProgramException()
+            };
+
+            RenderNameTable(ppu, frame, span.Slice(mainNameTableOffset, tableLength), new Rect(scrollX, scrollY, 256, 240), -scrollX, -scrollY);
+
+            if (scrollX > 0)
+            {
+                RenderNameTable(ppu, frame, span.Slice(secondNameTableOffset, tableLength), new Rect(0, 0, scrollX, 240), 256 - scrollX, 0);
+            } else if (scrollY > 0)
+            {
+                RenderNameTable(ppu, frame, span.Slice(secondNameTableOffset, tableLength), new Rect(0, 0, 256, scrollY), 0, 240 - scrollY);
             }
 
             for (var i = ppu.OAMData.Length - 4; i >= 0; i -= 4)
@@ -78,9 +114,9 @@ namespace NesEmulator.Core
                 var palleteIdx = ppu.OAMData[i + 2] & 0b11;
 
                 var spritePallete = GetSpritePallete(ppu, palleteIdx);
-                bank = ppu.Control.SpritePatternAddress();
+                var bank = ppu.Control.SpritePatternAddress();
 
-                var tile = span.Slice(bank + tileIdx * 16, 16); ;
+                var tile = ppu.ChrROM.AsSpan().Slice(bank + tileIdx * 16, 16); ;
 
                 for (var y = 0; y < 8; y++)
                 {
@@ -139,6 +175,22 @@ namespace NesEmulator.Core
             var start = 0x11 + palleteIdx * 4;
 
             return new[] { (byte)0, ppu.PalletTable[start], ppu.PalletTable[start + 1], ppu.PalletTable[start + 2] };
+        }
+
+        public record Rect
+        {
+            public int X1 { get; set; }
+            public int Y1 { get; set; }
+            public int X2 { get; set; }
+            public int Y2 { get; set; }
+
+            public Rect(int x1, int y1, int x2, int y2)
+            {
+                X1 = x1;
+                Y1 = y1;
+                X2 = x2;
+                Y2 = y2;
+            }
         }
     }
 }

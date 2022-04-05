@@ -29,7 +29,7 @@ namespace NesEmulator.Core
 		public bool LeftMost8PixelBackground => (Value & ((byte)MaskRegisterEnum.LeftMost8PixelBackground)) != 0;
 		public bool LeftMost8PixelSprite => (Value & ((byte)MaskRegisterEnum.LeftMost8PixelSprite)) != 0;
 		public bool ShouldShowBackground => (Value & ((byte)MaskRegisterEnum.ShowBackground)) != 0;
-		public bool ShoukdShowSprites => (Value & ((byte)MaskRegisterEnum.ShowSprites)) != 0;
+		public bool ShoukdShowSprites() => (Value & ((byte)MaskRegisterEnum.ShowSprites)) != 0;
 
 		public void Update(byte data) => Value = data;
 
